@@ -3,6 +3,7 @@
 /public/storage
 /public/certificados_vacunacion
 /public/disennos_gafetes
+/storage
 /storage/*.key
 /vendor
 .env
