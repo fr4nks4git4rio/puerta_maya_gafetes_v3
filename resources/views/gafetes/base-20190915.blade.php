@@ -1,0 +1,146 @@
+@extends('reportes.main_gafete')
+
+@section('content')
+
+    @php
+        //$color = $gafete->Empleado->Cargo->crgo_color;
+        $color = $gafete->Empleado->Local->Acceso->cacs_color;
+        $folio =$gafete->sgft_id;
+    @endphp
+    <style>
+
+        .top-color{
+            display: block;
+            background-color: {{ $color }};
+            margin: 0;
+            width: 100%;
+            height: 10mm;
+        }
+
+        .foot-color{
+            /* display: block; */
+            /* float: left; */
+            position: absolute;
+            top: 346px;
+            /* right:10px; */
+
+            /* margin-bottom: 0; */
+            background-color: {{ $color }};
+            margin: 0;
+            width: 100%;
+            height: 20mm;
+        }
+
+        .top-year{
+            display: block;
+            color: white;
+            font-weight: bold;
+            width: 100%;
+            text-align: right;
+            padding-right: 2mm;
+            padding-top: 2mm;
+        }
+
+        .logo-container{
+            display: inline-block;
+            /* border: 1px solid red; */
+            width: 26mm;
+            /* margin-right: 4mm; */
+        }
+
+        .photo-container{
+            display: inline-block;
+            /* border: 1px solid blue; */
+            width: 36mm;
+            height: 45mm;
+            /* margin-top: -10mm; */
+            /* margin-left: 2mm; */
+        }
+
+        /* .im-pm{
+            width: 85%;
+        } */
+
+        .foto{
+            width: 35mm;
+        }
+
+        .nombre{
+            font-size: 18px;
+            font-weight: bold;
+            color:black;
+        }
+
+    </style>
+
+
+
+
+    <div class="top-color">
+
+    <span class="top-year">
+        {{ substr($gafete->sgft_fecha,0,4)  }}
+    </span>
+
+
+    </div>
+
+
+
+    {{-- <div class="row"> --}}
+
+    <br>
+
+
+    <div class="logo-container" style="margin:2mm; padding-left: 2mm; " class="text-center">
+
+        <img src="{{ url("images/pm_logo_2.png") }}" class="img-pm" style="width:20mm;" >
+        <div class="text-center">
+            <h5> TERMINAL <br> MARÍTIMA <br> PUERTA MAYA </h5>
+        </div>
+
+    </div>
+
+    <div class="photo-container" style="margin-top:2mm; position:fixed;">
+        <img src="{{$gafete->sgft_foto_web}}" alt="" class="foto">
+        <br>
+        {{-- <div class="text-center">
+            test
+        </div> --}}
+    </div>
+
+    <div class="row">
+
+        <p class="col text-center nombre">
+            <b>{{ $gafete->sgft_nombre }}</b> <br>
+            {{-- <b>Fabiola Cabrera Ruiz</b> <br> --}}
+        </p>
+    </div>
+
+    <div class="row">
+
+        {{-- <div class="col-12" style="border:1px solid green"> --}}
+        <div class="col-12">
+            {{-- <br> --}}
+            <b>{{$gafete->Local->lcal_nombre_comercial}}</b> <br>
+            <small> {{ $gafete->sgft_cargo }} </small>
+        </div>
+
+
+
+    </div>
+
+    <div class="foot-color">
+        <div class="text-right" style="color: white; padding: 5px;">
+            <br>
+            <small>Vencimiento</small>  <br>
+            <small><b>Dic, 31 {{ substr($gafete->sgft_fecha,0,4)  }}</b></small>
+        </div>
+    </div>
+
+    {{-- </div> --}}
+
+    @include('gafetes.back-01',compact('gafete','folio'))
+
+@endsection
+

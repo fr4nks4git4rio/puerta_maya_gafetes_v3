@@ -1,0 +1,21 @@
+/node_modules
+/public/hot
+/public/storage
+/public/certificados_vacunacion
+/public/disennos_gafetes
+/storage/*.key
+/vendor
+.env
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+.zip
+
+# Ignore Mac DS_Store files
+.DS_Store
+**/.DS_Store
+
+\.idea/
