@@ -14,6 +14,17 @@ class EmpleadoUbicacion extends Model
     protected $primaryKey = 'emplub_empl_id';
     // protected $guarded = ['emplub_empl_id'];
 
+    protected $fillable = [
+        'emplub_empl_id',
+        'emplub_lcal_id',
+        'emplub_door_in_id',
+        'emplub_door_out_id',
+        'emplub_ubicacion',
+        'emplub_fecha',
+        'emplub_autos',
+        'emplub_motos'
+    ];
+
     public $timestamps = false;
 
     protected $dates = ['emplub_fecha'];
