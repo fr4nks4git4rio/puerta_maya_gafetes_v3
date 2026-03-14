@@ -85,7 +85,7 @@ Route::get('/asignar_permisos_estacionamiento', function () {
             ];
     }
 
-    set_time_limit(count($empleados_autorizados) * 3);
+    set_time_limit(600);
 
     foreach ($empleados_autorizados as $empl) {
         DB::beginTransaction();
