@@ -211,7 +211,6 @@ class SeguridadController extends Controller
                 'empleado' => $empleado,
                 'puertas_numeros' => implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray())
             ];
-            $controllerService->updatePerson($data);
             $ubicacion = EmpleadoUbicacion::firstOrCreate(['emplub_empl_id' => $empleado->empl_id]);
             $ubicacion->fill([
                 'emplub_door_in_id' => $puerta,
@@ -219,6 +218,7 @@ class SeguridadController extends Controller
                 'emplub_ubicacion' => 1,
                 'emplub_fecha' => now()
             ])->save();
+            $controllerService->updatePerson($data);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -286,13 +286,13 @@ class SeguridadController extends Controller
                 'empleado' => $empleado,
                 'puertas_numeros' => $numeros
             ];
-            $controllerService->updatePerson($data);
             $ubicacion = EmpleadoUbicacion::firstOrCreate(['emplub_empl_id' => $empleado->empl_id]);
             $ubicacion->fill([
                 'emplub_door_out_id' => $puerta,
                 'emplub_ubicacion' => 0,
                 'emplub_fecha' => now()
             ])->save();
+            $controllerService->updatePerson($data);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();

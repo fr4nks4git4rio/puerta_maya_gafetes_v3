@@ -12,7 +12,7 @@ class EmpleadoUbicacion extends Model
 {
     protected $table  = 'empleados_ubicacion';
     protected $primaryKey = 'emplub_empl_id';
-    protected $guarded = ['emplub_empl_id'];
+    // protected $guarded = ['emplub_empl_id'];
 
     public $timestamps = false;
 
