@@ -31,11 +31,45 @@ use App\Imports\DatosImport;
 use App\Local;
 use App\Puerta;
 use App\Services\ControladoraAccesoService;
+use App\SolicitudGafete;
 use App\VGafetesRfidV2;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
+
+Route::get('/convertir_numeros_gafetes_wiegand', function () {
+    $data = Excel::toArray(new DatosImport, public_path("/Listado empleados por Local.xlsx"));
+    $data = $data[0];
+    array_shift($data);
+    $empleados_autorizados = [];
+    foreach ($data as $d) {
+        if ($d[2])
+            $empleados_autorizados[] = [
+                'empleado_id' => $d[2],
+                'auto' => $d[4] != null,
+                'moto' => $d[5] != null
+            ];
+    }
+
+    DB::beginTransaction();
+    foreach ($empleados_autorizados as $empl) {
+        try {
+            $empleado = Empleado::find($empl['empleado_id']);
+            if ($empleado && $empleado->GafeteAcceso()) {
+                Log::error("Numero serial: " . $empleado->GafeteAcceso()->sgft_numero);
+                $wiegand = convert_serial_to_wiegand($empleado->GafeteAcceso()->sgft_numero);
+                Log::error("Numero wiegand: $wiegand");
+                SolicitudGafete::where('sgft_id', $empleado->GafeteAcceso()->sgft_id)->update(['sgft_numero' => $wiegand]);
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error: {$e->getMessage()}");
+        }
+    }
+    DB::commit();
+    echo "ECHO!!!!!";
+});
 
 Route::get('/asignar_permisos_estacionamiento', function () {
     $data = Excel::toArray(new DatosImport, public_path("/Listado empleados por Local.xlsx"));

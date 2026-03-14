@@ -35,3 +35,15 @@ if (!function_exists('cantidad_motos_dentro')) {
         return DB::select("SELECT COALESCE(SUM(emplub_motos), 0) as motos from empleados_ubicacion;")[0]->motos;
     }
 }
+
+if (!function_exists('convert_serial_to_wiegand')) {
+    function convert_serial_to_wiegand($serial) {
+        $facility_code = (int)((int)$serial/65536);
+
+        $rest1 = $facility_code * 65536;
+
+        $rest2 = (int)$serial - $rest1;
+
+        return "$facility_code$rest2";
+    }
+}

@@ -1211,7 +1211,9 @@ class SolicitudGafeteController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
 
-            $con_tarjeta = SolicitudGafete::where('sgft_numero', $this->data['sgft_numero'])->get();
+            $numero_wiegand = convert_serial_to_wiegand($this->data['sgft_numero']);
+
+            $con_tarjeta = SolicitudGafete::where('sgft_numero', $numero_wiegand)->get();
             if ($con_tarjeta->count() > 0) {
                 return response()->json($this->ajaxResponse(false, 'Ya existe una Solicitud de Gafete con ese Número de Tarjeta!'));
             }
@@ -1227,7 +1229,7 @@ class SolicitudGafeteController extends Controller
 
                 //                $solicitud->sgft_comentario_admin = $this->data['sgft_comentario_admin'];
                 $solicitud->sgft_estado = 'IMPRESA';
-                $solicitud->sgft_numero = $this->data['sgft_numero'];
+                $solicitud->sgft_numero = $numero_wiegand;
                 $solicitud->save();
 
                 //TODO desactivamos tarjetas anteriores
