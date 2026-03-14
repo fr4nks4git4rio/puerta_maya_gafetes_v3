@@ -72,7 +72,7 @@ Route::get('/convertir_numeros_gafetes_wiegand', function () {
 });
 
 Route::get('/asignar_permisos_estacionamiento', function () {
-    $data = Excel::toArray(new DatosImport, public_path("/Listado empleados por Local.xlsx"));
+    $data = Excel::toArray(new DatosImport, public_path("/Listado empleados por Local_faltantes.xlsx"));
     $data = $data[0];
     array_shift($data);
     $empleados_autorizados = [];
@@ -84,6 +84,8 @@ Route::get('/asignar_permisos_estacionamiento', function () {
                 'moto' => $d[5] != null
             ];
     }
+
+    dd($empleados_autorizados);
 
     set_time_limit(count($empleados_autorizados) * 2.5);
 
