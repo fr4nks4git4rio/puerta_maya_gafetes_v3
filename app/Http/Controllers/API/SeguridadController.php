@@ -23,7 +23,7 @@ class SeguridadController extends Controller
 {
     public function loadPuertasVirtualesEntrada()
     {
-        $controladora = Controladora::where('ctrl_ip', '192.168.10.201')->first();
+        $controladora = Controladora::where('ctrl_usuario', '!=', '')->where('ctrl_contrasenna', '!=', '')->first();
         $puertas[] = ['door_id' => 0, 'door_nombre' => 'Seleccione...'];
         $controladora->Puertas()
             ->where('door_tipo', 'PEATONAL')
@@ -40,7 +40,7 @@ class SeguridadController extends Controller
     }
     public function loadPuertasVirtualesSalida()
     {
-        $controladora = Controladora::where('ctrl_ip', '192.168.10.201')->first();
+        $controladora = Controladora::where('ctrl_usuario', '!=', '')->where('ctrl_contrasenna', '!=', '')->first();
         $puertas[] = ['door_id' => 0, 'door_nombre' => 'Seleccione...'];
         $controladora->Puertas()
             ->where('door_tipo', 'PEATONAL')
