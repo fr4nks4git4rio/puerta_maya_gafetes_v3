@@ -65,8 +65,6 @@ class SeguridadController extends Controller
     public function checkGafete($gafete)
     {
         $data = $this->checkFormatGafete($gafete);
-        Log::error("Gafete: $gafete");
-        Log::error("Data: " . json_encode($data));
         if (!$data)
             return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Formato incorrecto de Gafete!']], 200);
 
@@ -108,7 +106,6 @@ class SeguridadController extends Controller
                 break;
             case 'GE':
                 $gafete = GafeteEstacionamiento::where('gest_id', $data['identificador'])->withTrashed()->get();
-                Log::error($gafete);
                 if ($gafete->count() > 0) {
                     $gafete = $gafete->first();
                     $data['info'] = [
@@ -119,7 +116,6 @@ class SeguridadController extends Controller
                         'estado' => $gafete->gest_estado,
                         'activo' => $gafete->gest_disabled_at === null
                     ];
-                    Log::error($data);
                 } else {
                     return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Gafete no encontrado!']], 200);
                 }
@@ -160,7 +156,6 @@ class SeguridadController extends Controller
         }
 
         $data = $this->checkAcceso($data);
-        Log::error($data);
 
         return response()->json(['data' => $data]);
     }
@@ -319,7 +314,6 @@ class SeguridadController extends Controller
     public function recibirEventoStream(Request $request)
     {
         $data = $request->input();
-        Log::error($data);
         if (isset($data['AccessControllerEvent']) && $data['AccessControllerEvent']['majorEventType'] == 5 && $data['AccessControllerEvent']['subEventType'] == 1) {
             DB::beginTransaction();
             try {
