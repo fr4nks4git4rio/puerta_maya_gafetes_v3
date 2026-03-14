@@ -60,7 +60,7 @@ class SeguridadController extends Controller
     {
         $autos = cantidad_autos_dentro();
         $motos = cantidad_motos_dentro();
-        return response()->json(['success' => true,'data' => ['autos' => $autos, 'motos' => $motos]]);
+        return response()->json(['success' => true, 'data' => ['autos' => $autos, 'motos' => $motos]]);
     }
     public function checkGafete($gafete)
     {
@@ -169,19 +169,17 @@ class SeguridadController extends Controller
         switch ($data['tipo']) {
             case 'GA':
                 if ($data['separador'] === '-') {
-                    $empleado = Empleado::where('empl_id', $data['identificador'])->withTrashed()->get();
-                    if ($empleado->count() > 0 && $empleado->first()->GafeteAcceso()) {
-                        $empleado = $empleado->first();
+                    $empleado = Empleado::where('empl_id', $data['identificador'])->withTrashed()->first();
+                    if ($empleado && $empleado->GafeteAcceso()) {
                         if ($empleado->Ubicacion->emplub_ubicacion == 1)
                             return response()->json(['data' => ['success' => false, 'msg' => 'El empleado se encuentra dentro del recinto!']], 200);
                     } else {
                         return response()->json(['data' => ['success' => false, 'msg' => 'Empleado no encontrado!']], 200);
                     }
                 } elseif ($data['separador'] === '_') {
-                    $solicitud = SolicitudGafete::where('sgft_id', $data['identificador'])->withTrashed()->get();
+                    $solicitud = SolicitudGafete::where('sgft_id', $data['identificador'])->withTrashed()->first();
                     if ($solicitud->count() > 0) {
-                        $solicitud = $solicitud->first();
-                        if ($solicitud->Empleado->Ubicacion->emplub_ubicacion == 0)
+                        if ($solicitud->Empleado->Ubicacion->emplub_ubicacion == 1)
                             return response()->json(['data' => ['success' => false, 'msg' => 'El empleado se encuentra dentro del recinto!']], 200);
                         $empleado = $solicitud->Empleado;
                     } else {
@@ -214,16 +212,14 @@ class SeguridadController extends Controller
                 'puertas_numeros' => implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray())
             ];
             $controllerService->updatePerson($data);
-            DB::table('empleados_ubicacion')
-                ->where('emplub_empl_id', $empleado->empl_id)
-                ->update(
-                    [
-                        'emplub_door_in_id' => $puerta,
-                        'emplub_door_out_id' => null,
-                        'emplub_ubicacion' => 1,
-                        'emplub_fecha' => now()
-                    ]
-                );
+            EmpleadoUbicacion::updateOrCreate([
+                'emplub_empl_id' => $empleado->empl_id
+            ], [
+                'emplub_door_in_id' => $puerta,
+                'emplub_door_out_id' => null,
+                'emplub_ubicacion' => 1,
+                'emplub_fecha' => now()
+            ]);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -292,15 +288,13 @@ class SeguridadController extends Controller
                 'puertas_numeros' => $numeros
             ];
             $controllerService->updatePerson($data);
-            DB::table('empleados_ubicacion')
-                ->where('emplub_empl_id', $empleado->empl_id)
-                ->update(
-                    [
-                        'emplub_door_out_id' => $puerta,
-                        'emplub_ubicacion' => 0,
-                        'emplub_fecha' => now()
-                    ]
-                );
+            EmpleadoUbicacion::updateOrCreate([
+                'emplub_empl_id' => $empleado->empl_id
+            ], [
+                'emplub_door_out_id' => $puerta,
+                'emplub_ubicacion' => 0,
+                'emplub_fecha' => now()
+            ]);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
