@@ -211,13 +211,23 @@ class SeguridadController extends Controller
                 'empleado' => $empleado,
                 'puertas_numeros' => implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray())
             ];
-            $ubicacion = EmpleadoUbicacion::firstOrCreate(['emplub_empl_id' => $empleado->empl_id]);
-            $ubicacion->fill([
-                'emplub_door_in_id' => $puerta,
-                'emplub_door_out_id' => null,
-                'emplub_ubicacion' => 1,
-                'emplub_fecha' => now()
-            ])->save();
+            $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
+            if ($ubicacion) {
+                DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->update([
+                    'emplub_door_in_id' => $puerta,
+                    'emplub_door_out_id' => null,
+                    'emplub_ubicacion' => 1,
+                    'emplub_fecha' => now()
+                ]);
+            } else {
+                DB::table('empleados_ubicacion')->insert([
+                    'emplub_empl_id' => $empleado->empl_id,
+                    'emplub_door_in_id' => $puerta,
+                    'emplub_door_out_id' => null,
+                    'emplub_ubicacion' => 1,
+                    'emplub_fecha' => now()
+                ]);
+            }
             $controllerService->updatePerson($data);
             DB::commit();
         } catch (Exception $e) {
@@ -286,12 +296,21 @@ class SeguridadController extends Controller
                 'empleado' => $empleado,
                 'puertas_numeros' => $numeros
             ];
-            $ubicacion = EmpleadoUbicacion::firstOrCreate(['emplub_empl_id' => $empleado->empl_id]);
-            $ubicacion->fill([
-                'emplub_door_out_id' => $puerta,
-                'emplub_ubicacion' => 0,
-                'emplub_fecha' => now()
-            ])->save();
+            $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
+            if ($ubicacion) {
+                DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->update([
+                    'emplub_door_out_id' => $puerta,
+                    'emplub_ubicacion' => 0,
+                    'emplub_fecha' => now()
+                ]);
+            } else {
+                DB::table('empleados_ubicacion')->insert([
+                    'emplub_empl_id' => $empleado->empl_id,
+                    'emplub_door_out_id' => $puerta,
+                    'emplub_ubicacion' => 0,
+                    'emplub_fecha' => now()
+                ]);
+            }
             $controllerService->updatePerson($data);
             DB::commit();
         } catch (Exception $e) {
