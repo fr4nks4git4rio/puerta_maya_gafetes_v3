@@ -407,8 +407,13 @@ class SeguridadController extends Controller
                                 'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos - 1) : $motos
                             ];
                         }
-                        DB::table('empleados_ubicacion')
-                            ->updateOrInsert(['emplub_empl_id' => $empleado->empl_id], $d);
+                        if (DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->count() > 0) {
+                            DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->update($d);
+                        } else {
+                            $d['emplub_empl_id'] = $empleado->empl_id;
+                            DB::table('empleados_ubicacion')
+                                ->insert($d);
+                        }
                     }
 
                     DB::commit();

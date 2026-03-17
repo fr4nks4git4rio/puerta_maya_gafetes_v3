@@ -480,7 +480,6 @@ class ControladoraAccesoService
                                         'emplub_autos' => $autos,
                                         'emplub_motos' => $motos
                                     ]);
-                                    // $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
                                 } else {
                                     DB::table('empelados_ubicacion')
                                         ->where('emplub_empl_id', $empleado->empl_id)

@@ -6,6 +6,7 @@ use App\Actions\ActivarTarjetaV2;
 use App\Actions\CrearTarjetaV2;
 use App\Actions\DesactivarTarjeta;
 use App\Actions\DesactivarTarjetaV2;
+use App\Actions\EliminarTarjetaV3;
 use App\Controladora;
 use App\SolicitudGafete;
 use App\VGafetesRfid;
@@ -27,6 +28,7 @@ use App\Clases\PhotoSaver;
 use App\Empleado;
 use App\CatCargo;
 use App\Local;
+use App\VGafetesRfidV3;
 
 class EmpleadoController extends Controller
 {
@@ -103,7 +105,7 @@ class EmpleadoController extends Controller
             $this->data['empl_vacuna_validada'] = 1;
         else
             $this->data['empl_vacuna_validada'] = 0;
-//        $this->system_folder_empleados = storage_path() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'empleados';
+        //        $this->system_folder_empleados = storage_path() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'empleados';
         $this->system_folder_empleados = public_path("storage") . DIRECTORY_SEPARATOR . 'empleados';
     }
 
@@ -122,8 +124,19 @@ class EmpleadoController extends Controller
 
         if ($request->ajax()) {
             return Datatables::of(
-                Empleado::select(['empl_id', 'empl_nombre', 'empl_crgo_id',
-                    'empl_email', 'empl_telefono', 'empl_vacunado', 'crgo_descripcion', 'empl_thumb', 'sgftre_id', 'sgftre_permisos', 'sgftre_estado'])
+                Empleado::select([
+                    'empl_id',
+                    'empl_nombre',
+                    'empl_crgo_id',
+                    'empl_email',
+                    'empl_telefono',
+                    'empl_vacunado',
+                    'crgo_descripcion',
+                    'empl_thumb',
+                    'sgftre_id',
+                    'sgftre_permisos',
+                    'sgftre_estado'
+                ])
                     ->join('cat_cargos', 'empl_crgo_id', 'crgo_id')
                     ->leftJoin('solicitudes_gafetes_reasignar', 'empl_id', '=', 'sgftre_empl_id')
                     ->whereEmplLcalId($local->lcal_id)
@@ -133,14 +146,14 @@ class EmpleadoController extends Controller
                     return '<img class=" mx-auto d-block img-fluid" src="' . $model->empl_thumb_web . '" style="max-height:35px" />';
                 })
                 ->editColumn('sgftre_permisos', function (Empleado $model) {
-                    if(!$model->GafeteReasignado) return '';
+                    if (!$model->GafeteReasignado) return '';
 
                     $color = 'badge-primary';
-                    if($model->GafeteReasignado->sgftre_estado == 'PENDIENTE') $color = 'badge-inverse';
-                    if($model->GafeteReasignado->sgftre_estado == 'ASIGNADO') $color = 'badge-success';
-                    if($model->GafeteReasignado->sgftre_estado == 'DENEGADO') $color = 'badge-warning';
-                    if($model->GafeteReasignado->sgftre_estado == 'CANCELADO') $color = 'badge-danger';
-                    $html = '<div class="text-center">'.Str::replaceLast(',', ' y ', str_replace(['PEATONAL,', 'PEATONAL'], '', $model->GafeteReasignado->sgftre_permisos)).' <br><small class="badge ' . $color . '">' . $model->GafeteReasignado->sgftre_estado . '</small>';
+                    if ($model->GafeteReasignado->sgftre_estado == 'PENDIENTE') $color = 'badge-inverse';
+                    if ($model->GafeteReasignado->sgftre_estado == 'ASIGNADO') $color = 'badge-success';
+                    if ($model->GafeteReasignado->sgftre_estado == 'DENEGADO') $color = 'badge-warning';
+                    if ($model->GafeteReasignado->sgftre_estado == 'CANCELADO') $color = 'badge-danger';
+                    $html = '<div class="text-center">' . Str::replaceLast(',', ' y ', str_replace(['PEATONAL,', 'PEATONAL'], '', $model->GafeteReasignado->sgftre_permisos)) . ' <br><small class="badge ' . $color . '">' . $model->GafeteReasignado->sgftre_estado . '</small>';
                     $html .= '</div>';
                     return $html;
                 })
@@ -186,7 +199,6 @@ class EmpleadoController extends Controller
 
 
         return view('web.empleado.index', compact('dataTable', 'local'));
-
     }
 
 
@@ -195,9 +207,18 @@ class EmpleadoController extends Controller
 
         if ($request->ajax()) {
 
-            $records = Empleado::select(['empl_id', 'empl_nombre', 'empl_crgo_id',
-                'lcal_nombre_comercial', 'empl_vacunado', 'empl_vacuna_validada',
-                'empl_email', 'empl_telefono', 'crgo_descripcion', 'empl_thumb'])
+            $records = Empleado::select([
+                'empl_id',
+                'empl_nombre',
+                'empl_crgo_id',
+                'lcal_nombre_comercial',
+                'empl_vacunado',
+                'empl_vacuna_validada',
+                'empl_email',
+                'empl_telefono',
+                'crgo_descripcion',
+                'empl_thumb'
+            ])
                 ->join('cat_cargos', 'empl_crgo_id', 'crgo_id')
                 ->join('locales', 'empl_lcal_id', 'lcal_id')
                 ->orderBy('empl_nombre');
@@ -276,7 +297,6 @@ class EmpleadoController extends Controller
             ->put('', 'SELECCIONE UNA OPCIÓN');
 
         return view('web.empleado.index-admin', compact('dataTable', 'locales'));
-
     }
 
     public function formAdmin(Empleado $empleado = null, Request $request)
@@ -293,7 +313,6 @@ class EmpleadoController extends Controller
             ->put('', 'SELECCIONE UNA OPCIÓN');
 
         return view('web.empleado.form-admin', compact('empleado', 'url', 'cargos', 'locales'));
-
     }
 
     public function form(Empleado $empleado = null, Request $request)
@@ -307,7 +326,6 @@ class EmpleadoController extends Controller
             ->put('', 'SELECCIONE UNA OPCIÓN');
 
         return view('web.empleado.form', compact('empleado', 'url', 'cargos'));
-
     }
 
     public function insert(Request $request)
@@ -315,14 +333,13 @@ class EmpleadoController extends Controller
         if (!$this->validateAction('insert')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
 
             if ($this->data['empl_vacunado'] && !$request->hasFile('empl_cert_vacuna')) {
                 return response()->json($this->ajaxResponse(false, 'Debe subir el Certificado de Vacunación!'));
             }
 
-//            dd($this->data);
+            //            dd($this->data);
 
             DB::beginTransaction();
             try {
@@ -353,7 +370,6 @@ class EmpleadoController extends Controller
                         $empleado->empl_foto = $fileFoto;
                         $empleado->empl_thumb = $fileThumb;
                         $empleado->save();
-
                     }
                 }
             } catch (\Exception $e) {
@@ -363,7 +379,6 @@ class EmpleadoController extends Controller
 
             DB::commit();
             return response()->json($this->ajaxResponse(true, 'Empleado <b>CREADO</b> correctamente.'));
-
         }
     }
 
@@ -372,7 +387,6 @@ class EmpleadoController extends Controller
         if (!$this->validateAction('edit')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
 
             if ($this->data['empl_vacunado'] && (!$empleado->empl_cert_vacuna && !$request->hasFile('empl_cert_vacuna'))) {
@@ -414,12 +428,11 @@ class EmpleadoController extends Controller
                         $empleado->empl_foto = $fileFoto;
                         $empleado->empl_thumb = $fileThumb;
                         $empleado->save();
-
                     }
                 }
 
                 if ($empleado->GafeteAcceso()) {
-//                    $controller = Controladora::controladoraAccesoPeatonal();
+                    //                    $controller = Controladora::controladoraAccesoPeatonal();
                     if ($empleado->GafeteAcceso()->is_active && ($empleado->empl_vacunado == 0 || $empleado->empl_vacuna_validada == 0)) {
                         foreach ($empleado->GafeteAcceso()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
                             $pin_value = 0;
@@ -460,7 +473,6 @@ class EmpleadoController extends Controller
                                 return response()->json($this->ajaxResponse(false, "Ocurrió un error al activar la tarjeta en la controladora $controller->ctrl_nombre.", $res));
                             }
                         }
-
                     }
                 }
                 // ----------------
@@ -472,7 +484,6 @@ class EmpleadoController extends Controller
             DB::commit();
             return response()->json($this->ajaxResponse(true, "Empleado <b>EDITADO</b> correctamente."));
         }
-
     }
 
     public function insertAdmin(Request $request)
@@ -480,7 +491,6 @@ class EmpleadoController extends Controller
         if (!$this->validateAction('insert')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
 
             if ($this->data['empl_vacunado'] && !$request->hasFile('empl_cert_vacuna')) {
@@ -515,7 +525,6 @@ class EmpleadoController extends Controller
                         $empleado->empl_foto = $fileFoto;
                         $empleado->empl_thumb = $fileThumb;
                         $empleado->save();
-
                     }
                 }
             } catch (\Exception $e) {
@@ -525,7 +534,6 @@ class EmpleadoController extends Controller
 
             DB::commit();
             return response()->json($this->ajaxResponse(true, 'Empleado <b>CREADO</b> correctamente.'));
-
         }
     }
 
@@ -534,7 +542,6 @@ class EmpleadoController extends Controller
         if (!$this->validateAction('edit')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
             if ($this->data['empl_vacunado'] && (!$empleado->empl_cert_vacuna && !$request->hasFile('empl_cert_vacuna'))) {
                 return response()->json($this->ajaxResponse(false, 'Debe subir el Certificado de Vacunación!'));
@@ -574,12 +581,11 @@ class EmpleadoController extends Controller
                         $empleado->empl_foto = $fileFoto;
                         $empleado->empl_thumb = $fileThumb;
                         $empleado->save();
-
                     }
                 }
 
                 if ($empleado->GafeteAcceso()) {
-//                    $controller = Controladora::controladoraAccesoPeatonal();
+                    //                    $controller = Controladora::controladoraAccesoPeatonal();
                     if ($empleado->GafeteAcceso()->is_active && ($empleado->empl_vacunado == 0 || $empleado->empl_vacuna_validada == 0)) {
                         foreach ($empleado->GafeteAcceso()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
                             $pin_value = 0;
@@ -620,7 +626,6 @@ class EmpleadoController extends Controller
                                 return response()->json($this->ajaxResponse(false, "Ocurrió un error al activar la tarjeta en la controladora $controller->ctrl_nombre.", $res));
                             }
                         }
-
                     }
                 }
                 // ----------------
@@ -632,7 +637,6 @@ class EmpleadoController extends Controller
             DB::commit();
             return response()->json($this->ajaxResponse(true, "Empleado <b>EDITADO</b> correctamente."));
         }
-
     }
 
     public function delete(Empleado $empleado, Request $request)
@@ -653,26 +657,18 @@ class EmpleadoController extends Controller
             }
 
             //desactivamos tarjetas
-            $records = VGafetesRfidV2::whereEmplId($empleado->empl_id)
+            $records = VGafetesRfidV3::whereEmplId($empleado->empl_id)
                 ->whereNull('disabled_at')
                 ->get();
 
             foreach ($records as $r) {
-                foreach ($r->getOriginalRecord()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
-                    $controller = Controladora::findOrFail($key);
-                    foreach ($doors as $door) {
-                        $desactivar = new DesactivarTarjetaV2($r, $controller, $door->pin_value);
-                        $res = $desactivar->execute();
+                $crear = new EliminarTarjetaV3($r);
+                $res = $crear->execute();
 
-                        if ($res == false) {
-                            \DB::rollBack();
-                            return response()->json($this->ajaxResponse(false, 'No se pudo inhabilitar la tarjeta con Pin: ' . $r->referencia, $res));
-                        }
-                    }
+                if ($res == false) {
+                    return response()->json($this->ajaxResponse(false, "Ocurrió un error intentando eliminar la tarjeta: {$r->getOriginalRecord()->sgft_numero}.", $res));
                 }
             }
-
-
         } catch (\Exception $e) {
             \DB::rollBack();
             return response()->json($this->ajaxResponse(false, $e->getMessage()));
@@ -680,8 +676,6 @@ class EmpleadoController extends Controller
 
         \DB::commit();
         return response()->json($this->ajaxResponse(true, "Empleado <b>DADO DE BAJA</b> correctamente."));
-
-
     }
 
     public function getJSON(Empleado $empleado)
@@ -689,7 +683,6 @@ class EmpleadoController extends Controller
 
         // $empleado->empl_foto_web = $empleado->empl_foto_web;
         return response()->json($empleado->load('Cargo'));
-
     }
 
     /*Obtiene la información para un campo select2*/

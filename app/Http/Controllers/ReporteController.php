@@ -600,7 +600,7 @@ class ReporteController extends Controller
         $records = SolicitudGafete::whereRaw("sgft_permisos like '%AUTO%' or sgft_permisos like '%MOTO%'")->whereRaw(" DATE(sgft_created_at) BETWEEN '{$inicio->format('Y-m-d')}' AND '{$fin->format('Y-m-d')}'");
 
         if ($local != '') {
-            $records->whereGestLcalId($local);
+            $records->whereSgftLcalId($local);
         }
 
         $records->with('Local');
