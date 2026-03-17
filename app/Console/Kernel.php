@@ -70,6 +70,7 @@ class Kernel extends ConsoleKernel
             //Otorgar en la controladora los permisos autorizados
             $solicitudes = SolicitudGafeteReasignar::where('estado', 'ASIGNADO')->get();
             foreach ($solicitudes as $solicitud) {
+                set_time_limit(60);
                 DB::beginTransaction();
 
                 $gafeteRfid = $solicitud->Gafete()->first()->getVGafeteRfidV3();
@@ -102,6 +103,7 @@ class Kernel extends ConsoleKernel
             //Quitar en la controladora los permisos autorizados y eliminar las solicitud de permisos para las solicitudes en estado CANCELADO
             $solicitudes = SolicitudGafeteReasignar::where('estado', 'CANCELADO')->get();
             foreach ($solicitudes as $solicitud) {
+                set_time_limit(60);
                 DB::beginTransaction();
 
                 $solicitudGafete = SolicitudGafete::find($solicitud->sgftre_sgft_id);
