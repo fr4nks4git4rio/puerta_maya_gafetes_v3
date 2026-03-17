@@ -39,30 +39,31 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')
         //          ->hourly();
 
-        $schedule->call(function () {
+        // $schedule->call(function () {
 
-            $tipoCambio = new ActualizarTipoCambio(true);
-            $tipoCambio->execute();
-        })->everyMinute();
-
-
-        $schedule->call(function () {
-
-            $Notificator = new NotificarPermisosTemporalesVencidos();
-            $Notificator->execute();
-        })->dailyAt('03:00');
+        //     $tipoCambio = new ActualizarTipoCambio(true);
+        //     $tipoCambio->execute();
+        // })->everyMinute();
 
 
-        $schedule->call(function () {
+        // $schedule->call(function () {
 
-            //Extraer logs de la controladora
-            $controladoras = Controladora::all();
-            foreach ($controladoras as $controladora) {
-                $dcg = new DoorCommandGeneratorV2($controladora);
-                $dcg->getAccessLog();
-                sleep(1);
-            }
-        })->everyFiveMinutes();
+        //     $Notificator = new NotificarPermisosTemporalesVencidos();
+        //     $Notificator->execute();
+
+        // })->dailyAt('03:00');
+
+
+        // $schedule->call(function () {
+
+        //     //Extraer logs de la controladora
+        //     $controladoras = Controladora::all();
+        //     foreach ($controladoras as $controladora) {
+        //         $dcg = new DoorCommandGeneratorV2($controladora);
+        //         $dcg->getAccessLog();
+        //         sleep(1);
+        //     }
+        // })->everyFiveMinutes();
 
         $schedule->call(function () {
 
