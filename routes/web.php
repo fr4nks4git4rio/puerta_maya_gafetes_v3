@@ -151,6 +151,91 @@ Route::get('/asignar_permisos_estacionamiento', function () {
     echo "ECHO!!!!!";
 });
 
+Route::get('/asignar_permisos_restantes', function () {
+    $data = Excel::toArray(new DatosImport, public_path("/Empleados faltantes.xlsx"));
+    $data = $data[0];
+    array_shift($data);
+    $empleados_autorizados = [];
+    foreach ($data as $d) {
+        $empleados_autorizados[] = [
+            'empleado_id' => $d[0],
+            'auto' => $d[2] != null,
+            'moto' => $d[3] != null,
+            'en_controladora' => $d[4] != null
+        ];
+    }
+
+    foreach ($empleados_autorizados as $empl) {
+        set_time_limit(60);
+        DB::beginTransaction();
+        try {
+            $empleado = Empleado::find($empl['empleado_id']);
+            if ($empleado && $empleado->GafeteAcceso()) {
+
+                $permisos = 'PEATONAL';
+
+                if ($empl['auto'] || $empl['moto']) {
+                    if ($empl['auto']) $permisos .= ",AUTO";
+                    if ($empl['moto']) $permisos .= ",MOTO";
+                    $fecha = now()->format('Y-m-d H:i:s');
+                    if (DB::table('solicitudes_gafetes_reasignar')->where('sgftre_empl_id', $empleado->empl_id)->count() > 0) {
+                        Log::info("Permisos actualizados a '$empleado->empl_nombre': $permisos");
+                        DB::table('solicitudes_gafetes_reasignar')
+                            ->where('sgftre_empl_id', $empleado->empl_id)
+                            ->update([
+                                'sgftre_permisos' => $permisos
+                            ]);
+                    } else {
+                        Log::info("Permisos asignados a '$empleado->empl_nombre': $permisos");
+                        DB::insert("INSERT INTO solicitudes_gafetes_reasignar
+                    (sgftre_permisos, sgftre_anio, sgftre_estado, sgftre_fecha_solicitado, sgftre_fecha_asignado, sgftre_fecha_autorizado, sgftre_empl_id, sgftre_sgft_id, sgftre_lcal_id, sgftre_created_at)
+                    VALUES ('$permisos', 2026, 'AUTORIZADO', '$fecha','$fecha','$fecha', $empleado->empl_id, {$empleado->GafeteAcceso()->sgft_id}, {$empleado->Local->lcal_id}, '$fecha')");
+                    }
+                }
+
+                $puertas = Puerta::with('Controladora')
+                    ->whereHas('Controladora', function ($query) {
+                        $query->where('ctrl_usuario', '!=', '')
+                            ->where('ctrl_contrasenna', '!=', '');
+                    })
+                    ->where('door_modo', 'FISICA')
+                    ->whereIn('door_tipo', explode(',', $permisos))->pluck('door_id');
+
+                $empleado->GafeteAcceso()->Puertas()->sync($puertas);
+
+                $gafeteRfid = $empleado->GafeteAcceso()->getVGafeteRfidV3();
+                $controladora = Controladora::find($gafeteRfid->controladora_id);
+
+                if (!$empl['en_controladora']) {
+                    Log::info('Numero serial: ' . $empleado->GafeteAcceso()->sgft_numero);
+                    $wiegand = convert_serial_to_wiegand($empleado->GafeteAcceso()->sgft_numero);
+                    Log::info('Numero wiegand: ' . $wiegand);
+                    SolicitudGafete::where('sgft_id', $empleado->GafeteAcceso()->sgft_id)->update(['sgft_numero' => $wiegand]);
+                    $crear = new CrearTarjetaV3($gafeteRfid);
+                    $res = $crear->execute();
+                    if ($res == false) {
+                        DB::rollBack();
+                        Log::error("Ocurrió un error al crear la tarjeta en la controladora $controladora->ctrl_nombre.");
+                    }
+                }
+
+                $activar = new ActivarTarjetaV3($gafeteRfid);
+                $res = $activar->execute();
+                if ($res == false) {
+                    DB::rollBack();
+                    Log::error("Ocurrió un error al activar la tarjeta en la controladora $controladora->ctrl_nombre.");
+                }
+            }
+            DB::commit();
+            sleep(1);
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error("Error: {$e->getMessage()}");
+        }
+    }
+    echo "ECHO!!!!!";
+});
+
 
 Auth::routes();
 

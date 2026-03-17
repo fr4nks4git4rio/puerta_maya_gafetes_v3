@@ -336,7 +336,7 @@ class SeguridadController extends Controller
                         ->where('door_controladora_id', $controladora->ctrl_id)
                         ->where('door_numero', $event['doorNo'])
                         ->first();
-                    LogAcceso::firstOrCreate([
+                    $logAcceso = LogAcceso::firstOrCreate([
                         'lgac_serial_no' => $event['serialNo']
                     ], [
                         'lgac_mac_address' => $data['macAddress'],
@@ -358,56 +358,59 @@ class SeguridadController extends Controller
                     ]);
                     $controllerService = new ControladoraAccesoService($controladora);
                     $ubicacion = $empleado->Ubicacion;
-                    if ($door->door_direccion == 'SALIDA' && $door->door_tipo == 'PEATONAL' && in_array(optional($ubicacion->PuertaEntrada)->door_tipo, ['AUTO', 'MOTO'])) {
-                        $numeros = implode(
-                            ',',
-                            $empleado->GafeteAcceso()
-                                ->Puertas()
-                                ->where('door_direccion', 'ENTRADA')
-                                ->where('door_tipo', 'PEATONAL')
-                                ->where('door_modo', 'FISICA')
-                                ->pluck('door_numero')->toArray()
-                        );
-                    } else {
-                        $numeros = implode(
-                            ',',
-                            $empleado->GafeteAcceso()
-                                ->Puertas()
-                                ->where('door_direccion', $door->door_direccion === 'ENTRADA' ? 'SALIDA' : 'ENTRADA')
-                                ->where('door_modo', 'FISICA')
-                                ->pluck('door_numero')->toArray()
-                        );
-                    }
-                    $data = [
-                        'empleado' => $empleado,
-                        'puertas_numeros' => $numeros
-                    ];
-                    $controllerService->updatePerson($data);
 
-                    $autos = $ubicacion ? $ubicacion->emplub_autos : 0;
-                    $motos = $ubicacion ? $ubicacion->emplub_motos : 0;
-                    if ($door->door_direccion == 'ENTRADA') {
-                        $d = [
-                            'emplub_lcal_id' => $empleado->empl_lcal_id,
-                            'emplub_door_in_id' => $door->door_id,
-                            'emplub_door_out_id' => null,
-                            'emplub_ubicacion' => 1,
-                            'emplub_fecha' => now(),
-                            'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos + 1) : $autos,
-                            'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos + 1) : $motos
+                    if (!$ubicacion || Carbon::parse($ubicacion->emplub_fecha)->lessThanOrEqualTo($logAcceso->lgac_created_at)) {
+                        if ($door->door_direccion == 'SALIDA') {
+                            $numeros = implode(
+                                ',',
+                                $empleado->GafeteAcceso()
+                                    ->Puertas()
+                                    ->where('door_direccion', 'ENTRADA')
+                                    ->where('door_modo', 'FISICA')
+                                    ->pluck('door_numero')->toArray()
+                            );
+                        } else {
+                            $numeros = implode(
+                                ',',
+                                $empleado->GafeteAcceso()
+                                    ->Puertas()
+                                    ->where('door_direccion', 'SALIDA')
+                                    ->where('door_modo', 'FISICA')
+                                    ->pluck('door_numero')->toArray()
+                            );
+                        }
+                        $data = [
+                            'empleado' => $empleado,
+                            'puertas_numeros' => $numeros
                         ];
-                    } else {
-                        $d = [
-                            'emplub_lcal_id' => $empleado->empl_lcal_id,
-                            'emplub_door_out_id' => $door->door_id,
-                            'emplub_ubicacion' => 0,
-                            'emplub_fecha' => now(),
-                            'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos - 1) : $autos,
-                            'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos - 1) : $motos
-                        ];
+                        $controllerService->updatePerson($data);
+
+                        $autos = $ubicacion ? $ubicacion->emplub_autos : 0;
+                        $motos = $ubicacion ? $ubicacion->emplub_motos : 0;
+                        if ($door->door_direccion == 'ENTRADA') {
+                            $d = [
+                                'emplub_lcal_id' => $empleado->empl_lcal_id,
+                                'emplub_door_in_id' => $door->door_id,
+                                'emplub_door_out_id' => null,
+                                'emplub_ubicacion' => 1,
+                                'emplub_fecha' => now(),
+                                'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos + 1) : $autos,
+                                'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos + 1) : $motos
+                            ];
+                        } else {
+                            $d = [
+                                'emplub_lcal_id' => $empleado->empl_lcal_id,
+                                'emplub_door_out_id' => $door->door_id,
+                                'emplub_ubicacion' => 0,
+                                'emplub_fecha' => now(),
+                                'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos - 1) : $autos,
+                                'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos - 1) : $motos
+                            ];
+                        }
+                        DB::table('empleados_ubicacion')
+                            ->updateOrInsert(['emplub_empl_id' => $empleado->empl_id], $d);
                     }
-                    DB::table('empleados_ubicacion')
-                        ->updateOrInsert(['emplub_empl_id' => $empleado->empl_id], $d);
+
                     DB::commit();
                 }
             } catch (Exception $e) {

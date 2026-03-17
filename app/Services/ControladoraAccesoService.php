@@ -396,7 +396,8 @@ class ControladoraAccesoService
         $this->endPoint = "/ISAPI/AccessControl/AcsEvent?format=json";
         $this->description = "Recuperar y sincronizar eventos de la controladora (PULLING).";
         $this->inicioPeticion = now();
-        $lastSync = settings()->get('last_sync_access_log', 0);
+        // $lastSync = settings()->get('last_sync_access_log', 0);
+        $lastEventDate = DB::table('log_accesos')->whereIn('lgac_source', ['pulling', 'event_notification_stream'])->orderByDesc('lgac_created_at')->first();
         while ($responseStatus == 'MORE') {
             $payload = [
                 'AcsEventCond' => [
@@ -407,8 +408,8 @@ class ControladoraAccesoService
                     'minor' => 1
                 ]
             ];
-            if ($lastSync)
-                $payload['AcsEventCond']['startTime'] = $lastSync;
+            if ($lastEventDate)
+                $payload['AcsEventCond']['startTime'] = Str::replaceFirst(' ', 'T', $lastEventDate) . "Z";
             $response =  $this->client->post(
                 $this->endPoint,
                 [
@@ -424,10 +425,7 @@ class ControladoraAccesoService
 
             $responseStatus = $body['AcsEvent']['responseStatusStrg'];
             $last_event_date = '';
-            $data_to_sync = [
-                'date_init' => '',
-                'events' => collect()
-            ];
+            $empleados_to_sync = [];
             if (in_array($responseStatus, ['OK', 'MORE'])) {
                 $events = $body['AcsEvent']['InfoList'];
                 foreach ($events as $event) {
@@ -439,18 +437,7 @@ class ControladoraAccesoService
                             ->where('door_controladora_id', $this->controller->ctrl_id)
                             ->where('door_numero', $event['doorNo'])
                             ->first();
-                        if ($sync_in_out_status) {
-                            if (!DB::table('log_accesos')->where('lgac_serial_no', $event['serialNo'])->exists()) {
-                                if (!$data_to_sync['date_init'])
-                                    $data_to_sync['date_init'] = str_replace(['T', 'Z'], [' ', ''], $event['time']);
-                                $data_to_sync['events']->push([
-                                    'lgac_door_id' => $door->door_id,
-                                    'lgac_empl_id' => $event['employeeNoString'],
-                                    'lgac_created_at' => str_replace(['T', 'Z'], [' ', ''], $event['time'])
-                                ]);
-                            }
-                        }
-                        LogAcceso::firstOrCreate([
+                        $logAcceso = LogAcceso::firstOrCreate([
                             'lgac_serial_no' => $event['serialNo']
                         ], [
                             'lgac_major' => $event['major'],
@@ -468,45 +455,74 @@ class ControladoraAccesoService
                             'lgac_payload' => json_encode($event),
                             'lgac_created_at' => str_replace(['T', 'Z'], [' ', ''], $event['time'])
                         ]);
+                        if ($sync_in_out_status) {
+                            $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
+
+                            if (!$ubicacion || Carbon::parse($ubicacion->emplub_fecha)->lessThanOrEqualTo($logAcceso->lgac_created_at)) {
+
+                                $controladora = Controladora::where('ctrl_id', $empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id)->first();
+                                $puerta = DB::table('puertas')
+                                    ->where('door_controladora_id', $controladora->ctrl_id)
+                                    ->where('door_numero', $event['doorNo'])
+                                    ->first();
+
+                                $autos = $ubicacion ? $ubicacion->emplub_autos : 0;
+                                $motos = $ubicacion ? $ubicacion->emplub_motos : 0;
+
+                                $autos = $puerta->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'AUTO' ? ($autos + 1) : $autos) : ($door->door_tipo == 'AUTO' ? ($autos - 1) : $autos);
+                                $motos = $puerta->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'MOTO' ? ($motos + 1) : $motos) : ($door->door_tipo == 'MOTO' ? ($motos - 1) : $motos);
+                                if (!$ubicacion) {
+                                    DB::table('empleados_ubicacion')->insert([
+                                        'emplub_empl_id' => $empleado->empl_id,
+                                        'emplub_door_out_id' => $puerta->door_id,
+                                        'emplub_ubicacion' => $puerta->door_direccion == 'ENTRADA',
+                                        'emplub_fecha' => $logAcceso->lgac_created_at,
+                                        'emplub_autos' => $autos,
+                                        'emplub_motos' => $motos
+                                    ]);
+                                    // $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
+                                } else {
+                                    DB::table('empelados_ubicacion')
+                                        ->where('emplub_empl_id', $empleado->empl_id)
+                                        ->update([
+                                            'emplub_door_out_id' => $puerta->door_id,
+                                            'emplub_ubicacion' => $puerta->door_direccion == 'ENTRADA',
+                                            'emplub_fecha' => $logAcceso->lgac_created_at,
+                                            'emplub_autos' => $autos,
+                                            'emplub_motos' => $motos
+                                        ]);
+                                }
+
+                                if (!in_array($empleado->empl_id, $empleados_to_sync))
+                                    $empleados_to_sync[] = $empleado->empl_id;
+                            }
+                        }
                         $last_event_date = $event['time'];
                     }
                 }
             }
 
             $position++;
-            sleep(1);
         }
 
         $response = $this->parseResponse($statusCode, $body);
         if ($response['success'] && count($body['AcsEvent']['InfoList']) > 0) {
             settings()->set('last_sync_access_log', $last_event_date);
 
-            if ($sync_in_out_status && $data_to_sync['events']->count() > 0) {
-                DB::table('log_accesos')
-                    ->whereIn('lgac_source', ['mobile_app', 'web_site'])
-                    ->where('lgac_created_at', '>', $data_to_sync['date_init'])
-                    ->get()->map(function ($log) use (&$data_to_sync) {
-                        $data_to_sync['events']->push([
-                            'lgac_door_id' => $log->lgac_door_id,
-                            'lgac_empl_id' => $log->lgac_empl_id,
-                            'lgac_created_at' => $log->lgac_created_at
-                        ]);
-                    });
-                $data_to_sync['events'] = $data_to_sync['events']->sortBy('lgac_created_at')->values();
-                foreach ($data_to_sync['events'] as $event) {
+            if ($sync_in_out_status && count($empleados_to_sync) > 0) {
+                foreach ($empleados_to_sync as $empl) {
                     set_time_limit(60);
-                    $empleado = Empleado::find($event['lgac_empl_id']);
+                    $empleado = $empl;
                     $ubicacion = $empleado->Ubicacion;
                     $controladora = Controladora::where('ctrl_id', $empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id)->first();
                     $controllerService = new ControladoraAccesoService($controladora);
-                    $door = Puerta::find($event['lgac_door_id']);
-                    if ($door->door_direccion == 'SALIDA' && $door->door_tipo == 'PEATONAL' && in_array(optional($ubicacion->PuertaEntrada)->door_tipo, ['AUTO', 'MOTO'])) {
+                    $door = $ubicacion->emplub_door_out_id ? Puerta::find($ubicacion->emplub_door_out_id) : Puerta::find($ubicacion->emplub_door_in_id);
+                    if ($door->door_direccion == 'SALIDA') {
                         $numeros = implode(
                             ',',
                             $empleado->GafeteAcceso()
                                 ->Puertas()
                                 ->where('door_direccion', 'ENTRADA')
-                                ->where('door_tipo', 'PEATONAL')
                                 ->where('door_modo', 'FISICA')
                                 ->pluck('door_numero')->toArray()
                         );
@@ -515,7 +531,7 @@ class ControladoraAccesoService
                             ',',
                             $empleado->GafeteAcceso()
                                 ->Puertas()
-                                ->where('door_direccion', $door->door_direccion === 'ENTRADA' ? 'SALIDA' : 'ENTRADA')
+                                ->where('door_direccion', 'SALIDA')
                                 ->where('door_modo', 'FISICA')
                                 ->pluck('door_numero')->toArray()
                         );
@@ -525,31 +541,6 @@ class ControladoraAccesoService
                         'puertas_numeros' => $numeros
                     ];
                     $controllerService->updatePerson($data);
-
-                    $autos = $ubicacion ? $ubicacion->emplub_autos : 0;
-                    $motos = $ubicacion ? $ubicacion->emplub_motos : 0;
-                    if ($door->door_direccion == 'ENTRADA') {
-                        $d = [
-                            'emplub_lcal_id' => $empleado->empl_lcal_id,
-                            'emplub_door_in_id' => $door->door_id,
-                            'emplub_door_out_id' => null,
-                            'emplub_ubicacion' => 1,
-                            'emplub_fecha' => now(),
-                            'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos + 1) : $autos,
-                            'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos + 1) : $motos
-                        ];
-                    } else {
-                        $d = [
-                            'emplub_lcal_id' => $empleado->empl_lcal_id,
-                            'emplub_door_out_id' => $door->door_id,
-                            'emplub_ubicacion' => 0,
-                            'emplub_fecha' => now(),
-                            'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos - 1) : $autos,
-                            'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos - 1) : $motos
-                        ];
-                    }
-                    DB::table('empleados_ubicacion')
-                        ->updateOrInsert(['emplub_empl_id' => $empleado->empl_id], $d);
                     sleep(1);
                 }
             }
