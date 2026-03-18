@@ -68,7 +68,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
 
             //Otorgar en la controladora los permisos autorizados
-            $solicitudes = SolicitudGafeteReasignar::where('estado', 'ASIGNADO')->get();
+            $solicitudes = SolicitudGafeteReasignar::where('sgftre_estado', 'ASIGNADO')->get();
             foreach ($solicitudes as $solicitud) {
                 set_time_limit(60);
                 DB::beginTransaction();
@@ -101,7 +101,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
 
             //Quitar en la controladora los permisos autorizados y eliminar las solicitud de permisos para las solicitudes en estado CANCELADO
-            $solicitudes = SolicitudGafeteReasignar::where('estado', 'CANCELADO')->get();
+            $solicitudes = SolicitudGafeteReasignar::where('sgftre_estado', 'CANCELADO')->get();
             foreach ($solicitudes as $solicitud) {
                 set_time_limit(60);
                 DB::beginTransaction();
