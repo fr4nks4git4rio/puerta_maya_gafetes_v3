@@ -383,36 +383,39 @@ class SeguridadController extends Controller
                             'empleado' => $empleado,
                             'puertas_numeros' => $numeros
                         ];
-                        $controllerService->updatePerson($data);
+                        $res = $controllerService->updatePerson($data);
+
+                        if (!$res['success']) {
+                            Log::error("Ha ocurrido un error recibiendo el evento desde la conrtroladora. Error: " . $res['message']);
+                            DB::rollBack();
+                            return ['success' => false];
+                        }
 
                         $autos = $ubicacion ? $ubicacion->emplub_autos : 0;
                         $motos = $ubicacion ? $ubicacion->emplub_motos : 0;
-                        if ($door->door_direccion == 'ENTRADA') {
-                            $d = [
-                                'emplub_lcal_id' => $empleado->empl_lcal_id,
-                                'emplub_door_in_id' => $door->door_id,
-                                'emplub_door_out_id' => null,
-                                'emplub_ubicacion' => 1,
-                                'emplub_fecha' => $logAcceso->lgac_created_at,
-                                'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos + 1) : $autos,
-                                'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos + 1) : $motos
-                            ];
-                        } else {
-                            $d = [
-                                'emplub_lcal_id' => $empleado->empl_lcal_id,
+
+                        $autos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'AUTO' ? ($autos + 1) : $autos) : ($door->door_tipo == 'AUTO' ? ($autos - 1) : $autos);
+                        $motos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'MOTO' ? ($motos + 1) : $motos) : ($door->door_tipo == 'MOTO' ? ($motos - 1) : $motos);
+
+                        if (!$ubicacion) {
+                            DB::table('empleados_ubicacion')->insert([
+                                'emplub_empl_id' => $empleado->empl_id,
                                 'emplub_door_out_id' => $door->door_id,
-                                'emplub_ubicacion' => 0,
+                                'emplub_ubicacion' => $door->door_direccion == 'ENTRADA',
                                 'emplub_fecha' => $logAcceso->lgac_created_at,
-                                'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos - 1) : $autos,
-                                'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos - 1) : $motos
-                            ];
-                        }
-                        if (DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->count() > 0) {
-                            DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->update($d);
+                                'emplub_autos' => $autos,
+                                'emplub_motos' => $motos
+                            ]);
                         } else {
-                            $d['emplub_empl_id'] = $empleado->empl_id;
-                            DB::table('empleados_ubicacion')
-                                ->insert($d);
+                            DB::table('empelados_ubicacion')
+                                ->where('emplub_empl_id', $empleado->empl_id)
+                                ->update([
+                                    'emplub_door_out_id' => $door->door_id,
+                                    'emplub_ubicacion' => $door->door_direccion == 'ENTRADA',
+                                    'emplub_fecha' => $logAcceso->lgac_created_at,
+                                    'emplub_autos' => $autos,
+                                    'emplub_motos' => $motos
+                                ]);
                         }
                     }
 

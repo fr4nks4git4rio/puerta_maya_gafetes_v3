@@ -461,21 +461,17 @@ class ControladoraAccesoService
                             if (!$ubicacion || Carbon::parse($ubicacion->emplub_fecha)->lessThanOrEqualTo($logAcceso->lgac_created_at)) {
 
                                 $controladora = Controladora::where('ctrl_id', $empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id)->first();
-                                $puerta = DB::table('puertas')
-                                    ->where('door_controladora_id', $controladora->ctrl_id)
-                                    ->where('door_numero', $event['doorNo'])
-                                    ->first();
 
                                 $autos = $ubicacion ? $ubicacion->emplub_autos : 0;
                                 $motos = $ubicacion ? $ubicacion->emplub_motos : 0;
 
-                                $autos = $puerta->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'AUTO' ? ($autos + 1) : $autos) : ($door->door_tipo == 'AUTO' ? ($autos - 1) : $autos);
-                                $motos = $puerta->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'MOTO' ? ($motos + 1) : $motos) : ($door->door_tipo == 'MOTO' ? ($motos - 1) : $motos);
+                                $autos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'AUTO' ? ($autos + 1) : $autos) : ($door->door_tipo == 'AUTO' ? ($autos - 1) : $autos);
+                                $motos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'MOTO' ? ($motos + 1) : $motos) : ($door->door_tipo == 'MOTO' ? ($motos - 1) : $motos);
                                 if (!$ubicacion) {
                                     DB::table('empleados_ubicacion')->insert([
                                         'emplub_empl_id' => $empleado->empl_id,
-                                        'emplub_door_out_id' => $puerta->door_id,
-                                        'emplub_ubicacion' => $puerta->door_direccion == 'ENTRADA',
+                                        'emplub_door_out_id' => $door->door_id,
+                                        'emplub_ubicacion' => $door->door_direccion == 'ENTRADA',
                                         'emplub_fecha' => $logAcceso->lgac_created_at,
                                         'emplub_autos' => $autos,
                                         'emplub_motos' => $motos
@@ -484,8 +480,8 @@ class ControladoraAccesoService
                                     DB::table('empelados_ubicacion')
                                         ->where('emplub_empl_id', $empleado->empl_id)
                                         ->update([
-                                            'emplub_door_out_id' => $puerta->door_id,
-                                            'emplub_ubicacion' => $puerta->door_direccion == 'ENTRADA',
+                                            'emplub_door_out_id' => $door->door_id,
+                                            'emplub_ubicacion' => $door->door_direccion == 'ENTRADA',
                                             'emplub_fecha' => $logAcceso->lgac_created_at,
                                             'emplub_autos' => $autos,
                                             'emplub_motos' => $motos
