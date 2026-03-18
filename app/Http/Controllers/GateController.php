@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\ActivarTarjeta;
 use App\Actions\ActivarTarjetaV2;
+use App\Actions\ActivarTarjetaV3;
 use App\Actions\CrearTarjetaV2;
 use App\Actions\DesactivarTarjeta;
 use App\Actions\DesactivarTarjetaV2;
+use App\Actions\DesactivarTarjetaV3;
 use App\Clases\DoorCommandGenerator;
 use App\Clases\DoorCommandGeneratorV2;
 use App\Controladora;
@@ -16,6 +18,7 @@ use App\Puerta;
 use App\Services\ControladoraAccesoService;
 use App\VGafetesRfid;
 use App\VGafetesRfidV2;
+use App\VGafetesRfidV3;
 use Illuminate\Http\Request;
 
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -81,7 +84,8 @@ class GateController extends Controller
         $filtros['tarjetasVigentes'] = $request->tarjetasVigentes ?? '';
         $filtros['perPageTarjeta'] = $request->perPageTarjeta ?? '';
 
-        $tarjetas = DB::table('v_gafetes_rfid_v3');
+        $tarjetas = DB::table('v_gafetes_rfid_v3')
+            ->whereNotNull('puertas');
         $path = "/gate-controller";
         if ($request->search_tarjeta) {
             $search_tarjeta = $request->search_tarjeta;
@@ -101,8 +105,7 @@ class GateController extends Controller
             $path .= $conector . "search_tarjeta=$search_tarjeta";
         }
         if ($request->tarjetasVigentes) {
-            $tarjetas->where('disabled_at', null)
-                ->whereNotNull('puertas');
+            $tarjetas->whereNotNull('puertas');
             //->whereRaw("DATE_FORMAT(str_to_date(inicio, 'Y-m-d'), '%Y') = ?", settings()->get('anio_impresion'));
             $conector = Str::contains($path, "?") ? '&' : '?';
             $path .= $conector . "tarjetasVigentes=1";
@@ -202,27 +205,20 @@ class GateController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en la petición!'));
         } else {
 
-            $gafete = VGafetesRfidV2::whereReferencia($this->data['card_pin'])->first();
-            foreach ($gafete->getOriginalRecord()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
-                $controller = Controladora::find($key);
-                // creamos tarjeta v2
-                $crear = new CrearTarjetaV2($gafete, $controller);
-                $res = $crear->execute();
+            $gafete = VGafetesRfidV3::whereReferencia($this->data['card_pin'])->first();
 
-                if ($res == false) {
-                    return response()->json($this->ajaxResponse(false, "Ocurrió un error al crear la tarjeta $gafete->numero_rfid en la controladora $controller->ctrl_nombre.", $res));
-                }
-                foreach ($doors as $door) {
-                    $activar = new ActivarTarjetaV2($gafete, $door->Controladora, $door->pin_value);
-                    $res = $activar->execute();
+            $solicitud = $gafete->getOriginalRecord();
 
-                    if ($res == false) {
-                        return response()->json($this->ajaxResponse(false, "Ocurrió un error al activar la tarjeta en la controladora " . $door->Controladora->ctrl_nombre, $res));
-                    }
-                }
+            if ($solicitud->Puertas()->count() == 0)
+                return response()->json($this->ajaxResponse(false, "La tarjeta no puede ser activada. No cuenta con puertas con permisos vinculadas."));
+
+            $activar = new ActivarTarjetaV3($gafete);
+            $res = $activar->execute();
+            if ($res == false) {
+                return response()->json($this->ajaxResponse(false, "Ocurrió un error al activar la tarjeta.", $res));
             }
 
-            return response()->json($this->ajaxResponse($res, 'Se enviaron los comandos a la controladora.'));
+            return response()->json($this->ajaxResponse($res, 'Tarjeta activada correctamente.'));
         }
     }
 
@@ -232,30 +228,18 @@ class GateController extends Controller
 
             return response()->json($this->ajaxResponse(false, 'Errores en la petición!'));
         } else {
-            set_time_limit(1000);
             foreach ($this->data['pines'] as $pin) {
-                $gafete = VGafetesRfidV2::whereReferencia($pin)->first();
-                foreach ($gafete->getOriginalRecord()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
-                    $controller = Controladora::find($key);
-                    // creamos tarjeta v2
-                    $crear = new CrearTarjetaV2($gafete, $controller);
-                    $res = $crear->execute();
-
+                set_time_limit(60);
+                $gafete = VGafetesRfidV3::whereReferencia($pin)->first();
+                if ($gafete->getOriginalRecord()->Puertas()->count() > 0) {
+                    $activar = new ActivarTarjetaV3($gafete);
+                    $res = $activar->execute();
                     if ($res == false) {
-                        return response()->json($this->ajaxResponse(false, "Ocurrió un error al crear la tarjeta $gafete->numero_rfid en la controladora $controller->ctrl_nombre.", $res));
+                        return response()->json($this->ajaxResponse(false, "Ocurrió un error al activar la tarjeta en la controladora " . $gafete->getOriginalRecord()->Controladora->ctrl_nombre, $res));
                     }
-                    foreach ($doors as $door) {
-                        $activar = new ActivarTarjetaV2($gafete, $door->Controladora, $door->pin_value);
-                        $res = $activar->execute();
-
-                        if ($res == false) {
-                            return response()->json($this->ajaxResponse(false, "Ocurrió un error al activar la tarjeta en la controladora " . $door->Controladora->ctrl_nombre, $res));
-                        }
-                    }
-                    DB::commit();
                 }
             }
-            return response()->json($this->ajaxResponse($res, 'Se enviaron los comandos a la controladora.'));
+            return response()->json($this->ajaxResponse($res, 'Tarjetas activadas correctamente.'));
         }
     }
 
@@ -308,40 +292,15 @@ class GateController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en la petición!'));
         } else {
 
-            $gafete = VGafetesRfidV2::whereReferencia($this->data['card_pin'])->first();
-            foreach ($gafete->getOriginalRecord()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
-                foreach ($doors as $door) {
-                    $activar = new DesactivarTarjetaV2($gafete, $door->Controladora, $door->pin_value);
-                    $res = $activar->execute();
+            $gafete = VGafetesRfidV3::whereReferencia($this->data['card_pin'])->first();
 
-                    if ($res == false) {
-                        \DB::rollBack();
-                        return response()->json($this->ajaxResponse(false, "Ocurrió un error al desactivar la tarjeta en la controladora " . $door->Controladora->ctrl_nombre, $res));
-                    }
-                }
+            $desactivar = new DesactivarTarjetaV3($gafete);
+            $res = $desactivar->execute();
+            if ($res == false) {
+                return response()->json($this->ajaxResponse(false, "Ocurrió un error al desactivar la tarjeta en la controladora " . $gafete->getOriginalRecord()->Controladora->ctrl_nombre, $res));
             }
 
-            return response()->json($this->ajaxResponse($res, 'Se enviaron los comandos a la controladora.'));
-
-            //            $cardPin = $this->data['card_pin'];
-            //            $cardNumber = $this->data['card_number'];
-            //
-            //            $cardRecord = VGafetesRfid::whereReferencia($cardPin)->first();
-            //
-            //            $doorPin = 1;
-            //            if($cardRecord->tipo == 'estacionamiento'){
-            //                $doorPin = 2;
-            //            }
-            //
-            //            $dcg = new DoorCommandGenerator();
-            //            $res1 = $dcg->lockCards($cardPin, $doorPin);
-            //
-            //            sleep(1);
-            //
-            //            $dcg = new DoorCommandGenerator();
-            //            $res2 = $dcg->delCards($cardPin,$cardNumber,0,0);
-
-
+            return response()->json($this->ajaxResponse($res, 'Tarjeta desactivada correctamente.'));
         }
     }
 }

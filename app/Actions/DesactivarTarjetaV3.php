@@ -8,7 +8,7 @@ use App\Services\ControladoraAccesoService;
 use App\VGafetesRfidV3;
 use Illuminate\Support\Facades\Log;
 
-class ActivarTarjetaV3
+class DesactivarTarjetaV3
 {
     private $force = false;
     private $gafete = null;
@@ -36,19 +36,19 @@ class ActivarTarjetaV3
 
             $dataEmpleado = [
                 'empleado' => $empleado,
-                'puertas_numeros' => $this->gafete->puertas_numeros
+                'puertas_numeros' => ''
             ];
             $resEmpl = $controllerService->updatePerson($dataEmpleado);
             if ($resEmpl['success'] == false) return false;
 
-            $this->gafete->getOriginalRecord()->setActivatedAt();
+            $this->gafete->getOriginalRecord()->setDisabledAt();
 
             return true;
         } catch (\Exception $e) {
 
             activity()
                 ->inLog('Door Controller')
-                ->log("Error al intentar activar las tarjetas de" . $empleado->empl_nombre . " : " . $e->getMessage());
+                ->log("Error al intentar desactivar las tarjetas de" . $empleado->empl_nombre . " : " . $e->getMessage());
 
             Log::error('Catched Exeption: ' . $e->getMessage() . ' On: ' . $e->getFile() . ' @' . $e->getLine());
 

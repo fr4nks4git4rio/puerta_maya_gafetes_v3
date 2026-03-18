@@ -200,6 +200,11 @@ class SolicitudGafete extends Model
         return "GA-$this->sgft_empl_id";
     }
 
+    public function Controladora()
+    {
+        return optional($this->Puertas()->first())->Controladora;
+    }
+
 
 
     ////////////////////////////////////////////////////////////////
