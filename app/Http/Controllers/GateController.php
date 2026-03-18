@@ -19,6 +19,7 @@ use App\Services\ControladoraAccesoService;
 use App\VGafetesRfid;
 use App\VGafetesRfidV2;
 use App\VGafetesRfidV3;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -83,6 +84,7 @@ class GateController extends Controller
         $filtros['search_tarjeta'] = $request->search_tarjeta ?? '';
         $filtros['tarjetasVigentes'] = $request->tarjetasVigentes ?? '';
         $filtros['perPageTarjeta'] = $request->perPageTarjeta ?? '';
+        $filtros['search_logs_acceso'] = $request->search_logs_acceso ?? '';
 
         $tarjetas = DB::table('v_gafetes_rfid_v3')
             ->whereNotNull('puertas');
@@ -126,9 +128,20 @@ class GateController extends Controller
         $admin_alog_days = settings()->get('admin_alog_days', 3);
         $accesos = DB::table('v_log_accesos_v3')
             ->whereRaw("(date(lgac_created_at) >=  CURDATE() - INTERVAL $admin_alog_days DAY )")
-            ->orderBy('lgac_created_at', 'desc')
-            //->take(500)
-            ->get();
+            ->orderBy('lgac_created_at', 'desc');
+        if ($request->search_logs_acceso) {
+            $search_logs_acceso = $request->search_logs_acceso;
+            $accesos->where(function (Builder $query) use ($search_logs_acceso) {
+                $query->orWhere('lgac_card_number', 'like', "%$search_logs_acceso%")
+                    ->orWhere('lgac_puerta', 'like', "%$search_logs_acceso%")
+                    ->orWhere('lgac_controladora', 'like', "%$search_logs_acceso%")
+                    ->orWhere('lgac_tipo', 'like', "%$search_logs_acceso%")
+                    ->orWhere('lgac_created_at', 'like', "%$search_logs_acceso%")
+                    ->orWhere('nombre', 'like', "%$search_logs_acceso%")
+                    ->orWhere('tipo', 'like', "%$search_logs_acceso%");
+            });
+        }
+        $accesos = $accesos->get();
 
         $interacciones = DoorControllerLog::orderBy('dclg_created_at', 'desc')
             ->take(500)
