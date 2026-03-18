@@ -393,7 +393,7 @@ class SeguridadController extends Controller
                                 'emplub_door_in_id' => $door->door_id,
                                 'emplub_door_out_id' => null,
                                 'emplub_ubicacion' => 1,
-                                'emplub_fecha' => now(),
+                                'emplub_fecha' => $logAcceso->lgac_created_at,
                                 'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos + 1) : $autos,
                                 'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos + 1) : $motos
                             ];
@@ -402,7 +402,7 @@ class SeguridadController extends Controller
                                 'emplub_lcal_id' => $empleado->empl_lcal_id,
                                 'emplub_door_out_id' => $door->door_id,
                                 'emplub_ubicacion' => 0,
-                                'emplub_fecha' => now(),
+                                'emplub_fecha' => $logAcceso->lgac_created_at,
                                 'emplub_autos' => $door->door_tipo == 'AUTO' ? ($autos - 1) : $autos,
                                 'emplub_motos' => $door->door_tipo == 'MOTO' ? ($motos - 1) : $motos
                             ];
