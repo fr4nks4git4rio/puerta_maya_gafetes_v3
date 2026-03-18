@@ -40,7 +40,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 Route::get('/arreglas_facturas', function () {
     set_time_limit(6000);
-    $facturas = Factura::where('fact_id', '>', 1458);
+    $facturas = Factura::where('fact_id', '>', 1458)->get();
 
     $facturas->map(function (Factura $factura) {
         if ($factura->fact_qr_code_path) {
