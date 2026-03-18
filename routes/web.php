@@ -24,6 +24,7 @@ use App\Actions\CrearTarjetaV3;
 use App\Actions\DesactivarTarjetaV2;
 use App\Controladora;
 use App\Empleado;
+use App\Factura;
 use App\Http\Controllers\ControladoraController;
 use App\Http\Controllers\PuertaController;
 use App\Http\Controllers\SettingsController;
@@ -34,7 +35,25 @@ use App\SolicitudGafete;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+
+Route::get('/arreglas_facturas', function () {
+    $facturas = Factura::all();
+
+    $facturas->map(function (Factura $factura) {
+        if ($factura->fact_qr_code_path) {
+            $factura->fact_qr_code_path = Str::replaceFirst('pm_credenciales', 'puerta_maya_gafetes_v3', $factura->fact_qr_code_path);
+        }
+        if ($factura->fact_xml_path) {
+            $factura->fact_xml_path = Str::replaceFirst('pm_credenciales', 'puerta_maya_gafetes_v3', $factura->fact_xml_path);
+        }
+        if ($factura->fact_qr_code_path || $factura->fact_xml_path)
+            $factura->save();
+    });
+
+    echo "ECHO!!!!!!";
+});
 
 Route::get('/convertir_numeros_gafetes_wiegand', function () {
     $data = Excel::toArray(new DatosImport, public_path("/Listado empleados por Local.xlsx"));
