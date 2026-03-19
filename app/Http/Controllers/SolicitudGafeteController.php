@@ -673,8 +673,10 @@ class SolicitudGafeteController extends Controller
             $solicitud->sgft_tipo = 'PRIMERA VEZ';
             $solicitud->sgft_foto = $empleado->empl_foto;
             $solicitud->sgft_thumb = $empleado->empl_thumb;
+            $solicitud->sgft_permisos = 'PEATONAL,AUTO,MOTO';
             $solicitud->sgft_comentario = 'SOLICITUD EXPRÉS GENERADA POR RECEPCIÓN';
 
+            $solicitud->sgft_anio = $anio_impresion;
             $solicitud->sgft_fecha = $fecha_creacion;
             $solicitud->sgft_estado = 'PENDIENTE';
             $solicitud->sgft_created_by = auth()->getUser()->id;
@@ -863,22 +865,13 @@ class SolicitudGafeteController extends Controller
     public function imprimirView(SolicitudGafete $solicitud)
     {
         $url = url('solicitud-gafete/do-imprimir-v3');
-
-        if ($solicitud->Local->Acceso->cacs_id === 1)
-            $puertas = Puerta::with('Controladora')
-                ->whereHas('Controladora', function ($query) {
-                    $query->where('ctrl_usuario', '!=', '')
-                        ->where('ctrl_contrasenna', '!=', '');
-                })
-                ->where('door_modo', 'FISICA')->get();
-        else
-            $puertas = Puerta::with('Controladora')
-                ->whereHas('Controladora', function ($query) {
-                    $query->where('ctrl_usuario', '!=', '')
-                        ->where('ctrl_contrasenna', '!=', '');
-                })
-                ->where('door_tipo', 'PEATONAL')
-                ->where('door_modo', 'FISICA')->get();
+        $puertas = Puerta::with('Controladora')
+            ->whereHas('Controladora', function ($query) {
+                $query->where('ctrl_usuario', '!=', '')
+                    ->where('ctrl_contrasenna', '!=', '');
+            })
+            ->whereIn('door_tipo', explode(',', $solicitud->sgft_permisos))
+            ->where('door_modo', 'FISICA')->get();
 
         return view('web.solicitud-gafete.imprimir', compact('solicitud', 'url', 'puertas'));
     }
