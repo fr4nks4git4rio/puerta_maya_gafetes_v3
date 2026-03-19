@@ -349,11 +349,8 @@ class SolicitudGafeteController extends Controller
 
         $comprobantes = ['' => 'Recuperando comprobantes capturados...'];
 
-        $gafetesGratisAuto = $local->gafetesGratuitosAutoDisponibles();
-        $gafetesGratisMoto = $local->gafetesGratuitosMotoDisponibles();
-
-        $gafetesPagoAuto = $local->gafetesEstacionamientoAutoDisponibles();
-        $gafetesPagoMoto = $local->gafetesEstacionamientoMotoDisponibles();
+        $gafetesAuto = $local->gafetesEstacionamientoAutoDisponibles();
+        $gafetesMoto = $local->gafetesEstacionamientoMotoDisponibles();
 
         $gafetes_activos = ['' => 'Recuperando gafetes activos...'];
         $gafetes_activos = SolicitudGafete::getGafetesEstacionaminetoActivos($local);
@@ -380,10 +377,8 @@ class SolicitudGafeteController extends Controller
             'comprobantes',
             'saldos',
             'local',
-            'gafetesGratisAuto',
-            'gafetesGratisMoto',
-            'gafetesPagoAuto',
-            'gafetesPagoMoto',
+            'gafetesAuto',
+            'gafetesMoto',
             'gafetes_activos',
             'gafetes_activos_autos',
             'gafetes_activos_motos'
@@ -559,6 +554,10 @@ class SolicitudGafeteController extends Controller
 
             try {
 
+                if (!isset($this->data['sgft_gratuito'])) {
+                    $this->data['sgft_gratuito'] = 0;
+                }
+
                 $empleado = Empleado::find($this->data['sgft_empl_id']);
 
                 if ($empleado->empl_foto == "") {
@@ -616,14 +615,23 @@ class SolicitudGafeteController extends Controller
                 $saldos = $solicitud->Local->getSaldos();
 
                 if (!$solicitud->sgft_gratuito) {
-                    if ($solicitud->sgft_costo > $saldos['saldo_vigente'] && $solicitud->sgft_gratuito != 1) {
-                        return response()->json($this->ajaxResponse(false, "Saldo insuficiente, capture mas comprobantes."));
+                    if ($solicitud->sgft_cpag_id) {
+                        if ($solicitud->sgft_costo > $saldos['saldo_virtual']) {
+                            return response()->json($this->ajaxResponse(false, "Saldo insuficiente, capture mas comprobantes."));
+                        }
+                    } else {
+                        if ($solicitud->sgft_costo > $saldos['saldo_vigente']) {
+                            return response()->json($this->ajaxResponse(false, "Saldo insuficiente, capture mas comprobantes."));
+                        }
                     }
+                    // if ($solicitud->sgft_costo > $saldos['saldo_vigente']) {
+                    //     return response()->json($this->ajaxResponse(false, "Saldo insuficiente, capture mas comprobantes."));
+                    // }
 
-                    //verificamos que se adjunten comprobantes pendientes si existen
-                    if ($solicitud->sgft_cpag_id < 1 && ComprobantePago::checkComprobantesPendientesPrevalidar($empleado->Local)) {
-                        return response()->json($this->ajaxResponse(false, "Existe algún comprobante pendiente de validar, favor de adjuntarlo a la solicitud."));
-                    }
+                    // //verificamos que se adjunten comprobantes pendientes si existen
+                    // if ($solicitud->sgft_cpag_id < 1 && ComprobantePago::checkComprobantesPendientesPrevalidar($empleado->Local)) {
+                    //     return response()->json($this->ajaxResponse(false, "Existe algún comprobante pendiente de validar, favor de adjuntarlo a la solicitud."));
+                    // }
                 }
 
 

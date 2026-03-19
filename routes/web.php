@@ -530,7 +530,7 @@ Route::group(['prefix' => '/solicitud-gafete'], function () {
     Route::post('/do-rechazar', 'SolicitudGafeteController@doRechazar')->middleware(['role:RECEPCIÓN']);
     Route::post('/do-validar', 'SolicitudGafeteController@doValidar')->middleware(['role:RECEPCIÓN']);
     Route::post('/do-rechazar-comprobante', 'SolicitudGafeteController@doRechazarComprobante')->middleware(['role:RECEPCIÓN']);
-    Route::post('/do-imprimir', 'SolicitudGafeteController@doImprimir')->middleware(['role:RECEPCIÓN']);
+    // Route::post('/do-imprimir', 'SolicitudGafeteController@doImprimir')->middleware(['role:RECEPCIÓN']);
     Route::post('/do-imprimir-v3', 'SolicitudGafeteController@doImprimirV3')->middleware(['role:RECEPCIÓN']);
     Route::post('/do-entregar', 'SolicitudGafeteController@doEntregar')->middleware(['role:RECEPCIÓN']);
     Route::post('/do-aceptar-comprobante', 'SolicitudGafeteController@doAceptarComprobante')->middleware(['role:RECEPCIÓN']);

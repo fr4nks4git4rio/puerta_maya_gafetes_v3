@@ -75,7 +75,7 @@ class Local extends Model
         //solicitados
         return $this->SolicitudesGafete()
             ->where('sgft_estado', '<>', 'CANCELADA')
-            ->whereRaw("sgft_anio = " . $anio_impresion)
+            ->whereRaw("DATE_FORMAT(sgft_fecha, '%Y') = ?", [$anio_impresion])
             ->whereRaw("sgft_permisos like ?", ['%AUTO%'])
             ->whereSgftGratuito(1)
             ->count();
@@ -87,7 +87,7 @@ class Local extends Model
         //solicitados
         return $this->SolicitudesGafete()
             ->where('sgft_estado', '<>', 'CANCELADA')
-            ->whereRaw("sgft_anio = " . $anio_impresion)
+            ->whereRaw("DATE_FORMAT(sgft_fecha, '%Y') = ?", [$anio_impresion])
             ->whereRaw("sgft_permisos like ?", ['%MOTO%'])
             ->whereSgftGratuito(1)
             ->count();
@@ -100,7 +100,7 @@ class Local extends Model
         //solicitados
         return $this->SolicitudesGafete()
             ->where('sgft_estado', '<>', 'CANCELADA')
-            ->whereRaw("sgft_anio = " . $anio_impresion)
+            ->whereRaw("DATE_FORMAT(sgft_fecha, '%Y') = ?", [$anio_impresion])
             ->whereRaw("sgft_permisos like ?", ['%AUTO%'])
             ->whereNull('sgft_disabled_at')
             ->count();
@@ -112,7 +112,7 @@ class Local extends Model
         //solicitados
         return $this->SolicitudesGafete()
             ->where('sgft_estado', '<>', 'CANCELADA')
-            ->whereRaw("sgft_anio = " . $anio_impresion)
+            ->whereRaw("DATE_FORMAT(sgft_fecha, '%Y') = ?", [$anio_impresion])
             ->whereRaw("sgft_permisos like ?", ['%MOTO%'])
             ->whereNull('sgft_disabled_at')
             ->count();
@@ -226,7 +226,7 @@ class Local extends Model
         $solicitados = $this->SolicitudesGafete()
             ->where('sgft_estado', '<>', 'CANCELADA')
             ->where('sgft_numero_estacionamiento', '>', 0)
-            ->whereRaw("sgft_anio = " . $anio_impresion)
+            ->whereRaw("DATE_FORMAT(sgft_fecha, '%Y') = ?", [$anio_impresion])
             ->whereRaw("sgft_permisos like ?", [$tipo])
             ->orderBy('sgft_numero_estacionamiento', 'asc')
             ->where('sgft_disabled_at', null)
@@ -236,7 +236,7 @@ class Local extends Model
         $this->SolicitudesGafete()
             ->where('sgft_estado', '<>', 'CANCELADA')
             ->where('sgft_numero_estacionamiento', '>', 0)
-            ->whereRaw("sgft_anio = " . $anio_impresion)
+            ->whereRaw("DATE_FORMAT(sgft_fecha, '%Y') = ?", [$anio_impresion])
             ->whereRaw("sgft_permisos like ?", [$tipo])
             ->orderBy('sgft_numero_estacionamiento', 'asc')
             ->where('sgft_disabled_at', null)
