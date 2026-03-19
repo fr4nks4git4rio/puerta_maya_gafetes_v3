@@ -1325,17 +1325,22 @@ class SolicitudGafeteController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
 
-            $con_tarjeta = SolicitudGafete::where('sgft_numero', $this->data['sgft_numero'])->where('sgft_id', '!=', $this->data['sgft_id'])->get();
+            $numero_wiegand = convert_serial_to_wiegand($this->data['sgft_numero']);
+
+            $con_tarjeta = SolicitudGafete::where('sgft_numero', $numero_wiegand)->get();
             if ($con_tarjeta->count() > 0) {
                 return response()->json($this->ajaxResponse(false, 'Ya existe una Solicitud de Gafete con ese Número de Tarjeta!'));
             }
+
+
+            DB::beginTransaction();
 
             $solicitud = SolicitudGafete::findOrFail($this->data['sgft_id']);
 
             if ($solicitud->sgft_estado != 'VALIDADA') {
                 return response()->json($this->ajaxResponse(false, 'PARA MARCAR UNA SOLICITUD COMO <b>IMPRESA</b>, SU ESTADO DEBE SER <b>VALIDADA</b>'));
             }
-            $solicitud->sgft_numero = $this->data['sgft_numero'];
+            $solicitud->sgft_numero = $numero_wiegand;
             $solicitud->save();
             $puertas = [];
             foreach ($input as $key => $data) {
@@ -1343,8 +1348,6 @@ class SolicitudGafeteController extends Controller
                     $puertas[] = explode('_', $key)[1];
             }
             $solicitud->Puertas()->sync($puertas);
-
-            DB::beginTransaction();
 
             try {
                 $solicitud = SolicitudGafete::findOrFail($this->data['sgft_id']);
