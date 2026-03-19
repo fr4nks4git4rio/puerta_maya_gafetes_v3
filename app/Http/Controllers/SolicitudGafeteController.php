@@ -1354,9 +1354,9 @@ class SolicitudGafeteController extends Controller
                 $solicitud->sgft_estado = 'IMPRESA';
                 $solicitud->save();
 
-                //TODO eliminar tarjetas anteriores
+                //TODO eliminar tarjeta anterior
                 if ($solicitud->Empleado->GafeteAcceso()) {
-                    $gafete = VGafetesRfidV3::whereRefId($solicitud->Empleado->GafeteAcceso()->id)->first();
+                    $gafete = $solicitud->Empleado->GafeteAcceso()->getVGafeteRfidV3();
                     if ($gafete && $gafete->controladora_id) {
                         $controladora = Controladora::find($gafete->controladora_id);
                         $eliminar = new EliminarTarjetaV3($gafete);
@@ -1367,8 +1367,8 @@ class SolicitudGafeteController extends Controller
                         }
                     }
                 }
-                //TODO Fin de eliminacion
 
+                //TODO Fin de eliminacion
                 $gafeteRfid = $solicitud->getVGafeteRfidV3();
                 $controladora = Controladora::find($gafeteRfid->controladora_id);
 

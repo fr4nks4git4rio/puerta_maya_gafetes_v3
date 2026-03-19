@@ -477,7 +477,7 @@ class ControladoraAccesoService
                                         'emplub_motos' => $motos
                                     ]);
                                 } else {
-                                    DB::table('empelados_ubicacion')
+                                    DB::table('empleados_ubicacion')
                                         ->where('emplub_empl_id', $empleado->empl_id)
                                         ->update([
                                             'emplub_door_out_id' => $door->door_id,

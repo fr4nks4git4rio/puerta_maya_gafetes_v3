@@ -288,7 +288,7 @@ class SeguridadController extends Controller
             ]);
             $controllerService = new ControladoraAccesoService(Controladora::find($empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id));
             $ubicacion = $empleado->Ubicacion;
-            if (in_array($ubicacion->PuertaEntrada->door_tipo, ['AUTO', 'MOTO']))
+            if ($ubicacion->exists() && in_array($ubicacion->PuertaEntrada->door_tipo, ['AUTO', 'MOTO']))
                 $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_tipo', 'PEATONAL')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
             else
                 $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
@@ -296,9 +296,9 @@ class SeguridadController extends Controller
                 'empleado' => $empleado,
                 'puertas_numeros' => $numeros
             ];
-            $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
-            if ($ubicacion) {
-                DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->update([
+            // $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
+            if ($ubicacion->exists()) {
+                DB::table('empleados_ubicacion')->where('emplub_empl_id', $ubicacion->emplub_empl_id)->update([
                     'emplub_door_out_id' => $puerta,
                     'emplub_ubicacion' => 0,
                     'emplub_fecha' => now()
@@ -390,13 +390,13 @@ class SeguridadController extends Controller
                         return ['success' => false];
                     }
 
-                    $autos = $ubicacion ? $ubicacion->emplub_autos : 0;
-                    $motos = $ubicacion ? $ubicacion->emplub_motos : 0;
+                    $autos = $ubicacion->exists() ? $ubicacion->emplub_autos : 0;
+                    $motos = $ubicacion->exists() ? $ubicacion->emplub_motos : 0;
 
                     $autos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'AUTO' ? ($autos + 1) : $autos) : ($door->door_tipo == 'AUTO' ? ($autos - 1) : $autos);
                     $motos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'MOTO' ? ($motos + 1) : $motos) : ($door->door_tipo == 'MOTO' ? ($motos - 1) : $motos);
 
-                    if (!$ubicacion) {
+                    if (!$ubicacion->exists()) {
                         DB::table('empleados_ubicacion')->insert([
                             'emplub_empl_id' => $empleado->empl_id,
                             'emplub_door_out_id' => $door->door_id,
@@ -406,7 +406,7 @@ class SeguridadController extends Controller
                             'emplub_motos' => $motos
                         ]);
                     } else {
-                        DB::table('empelados_ubicacion')
+                        DB::table('empleados_ubicacion')
                             ->where('emplub_empl_id', $empleado->empl_id)
                             ->update([
                                 'emplub_door_out_id' => $door->door_id,
