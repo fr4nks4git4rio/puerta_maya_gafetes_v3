@@ -286,29 +286,43 @@ class Local extends Model
 
         $importeSolicitudesTransito = SolicitudGafete::whereSgftLcalId($this->lcal_id)
             ->whereIn('sgft_estado', ['PENDIENTE'])
-            ->whereRaw("DATE_FORMAT(sgft_fecha, '%Y') = '$anio'")
+            // ->whereYear("sgft_fecha", $anio)
             ->sum('sgft_costo');
 
         $importeSolicitudesEfectivas = SolicitudGafete::whereSgftLcalId($this->lcal_id)
             ->whereIn('sgft_estado', ['VALIDADA', 'IMPRESA', 'ENTREGADA'])
-            ->whereRaw("DATE_FORMAT(sgft_fecha, '%Y') = '$anio'")
+            // ->whereYear("sgft_fecha", $anio)
             ->sum('sgft_costo');
+
+        ///TODO ESTACIONAMIENTO ---- Esto es para tener en cuenta los gafetes de estacionamiento
+        $gestTransito = GafeteEstacionamiento::whereGestLcalId($this->lcal_id)
+            ->whereIn('gest_estado', ['PENDIENTE'])
+            // ->where('gest_anio', $anio)
+            ->sum('gest_costo');
+
+        $gestEfectivos = GafeteEstacionamiento::whereGestLcalId($this->lcal_id)
+            ->whereIn('gest_estado', ['VALIDADA', 'IMPRESA', 'ENTREGADA'])
+            // ->where('gest_anio', $anio)
+            ->sum('gest_costo');
+
+        $importeSolicitudesTransito += $gestTransito;
+        $importeSolicitudesEfectivas += $gestEfectivos;
 
         /// /////////////////////
 
         $importePermisos = PermisoTemporal::wherePtmpLcalId($this->lcal_id)
             ->where('ptmp_estado', 'CONCLUIDO')
             ->where('ptmp_estado_extemporaneo', 'PAGADO')
-            ->whereRaw("DATE_FORMAT(ptmp_fecha, '%Y') = '$anio'")
+            // ->whereYear("ptmp_fecha", $anio)
             //  ->get();
             ->sum('ptmp_costo');
 
         $transferenciasRealizadas = TransferenciaSaldo::where('local_desde_id', $this->lcal_id)
-            ->whereRaw("DATE_FORMAT(fecha, '%Y') = '$anio'")
+            // ->whereYear("fecha", $anio)
             ->sum('saldo');
 
         $transferenciasRecibidas = TransferenciaSaldo::where('local_para_id', $this->lcal_id)
-            ->whereRaw("DATE_FORMAT(fecha, '%Y') = '$anio'")
+            // ->whereYear("fecha", $anio)
             ->sum('saldo');
 
         $saldo_virtual_old = $importeValidado + $importeTransito - $importeSolicitudesTransito - $importeSolicitudesEfectivas - $importePermisos + $transferenciasRecibidas;

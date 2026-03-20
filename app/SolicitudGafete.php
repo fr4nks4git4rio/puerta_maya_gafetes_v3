@@ -190,7 +190,7 @@ class SolicitudGafete extends Model
         return SolicitudGafete::whereSgftLcalId($local->lcal_id)
             ->where('sgft_numero', '>', 0)
             ->whereNull('sgft_disabled_at')
-            ->whereRaw('sgft_permisos like ? or sgft_permisos like ?', ['AUTO', 'MOTO'])
+            ->whereRaw('sgft_permisos like ? or sgft_permisos like ?', ['%AUTO%', '%MOTO%'])
             ->whereIn('sgft_estado', ['ENTREGADA', 'CANCELADA'])
             ->get();
     }
@@ -224,6 +224,11 @@ class SolicitudGafete extends Model
     public function ComprobantePago()
     {
         return $this->hasOne('App\ComprobantePago', 'cpag_id', 'sgft_cpag_id');
+    }
+
+    public function SolicitudGafeteReasignar()
+    {
+        return $this->hasOne('App\SolicitudGafeteReasignar', 'sgft_id', 'sgftre_sgft_id');
     }
 
     public function Puertas()
