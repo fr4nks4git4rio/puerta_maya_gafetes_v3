@@ -402,6 +402,7 @@ class SeguridadController extends Controller
                                 'emplub_empl_id' => $empleado->empl_id,
                                 'emplub_lcal_id' => $empleado->empl_lcal_id,
                                 'emplub_door_in_id' => $door->door_id,
+                                'emplub_door_out_id' => null,
                                 'emplub_ubicacion' => 1,
                                 'emplub_fecha' => $logAcceso->lgac_created_at,
                                 'emplub_autos' => $autos,
@@ -411,6 +412,7 @@ class SeguridadController extends Controller
                             DB::table('empleados_ubicacion')->insert([
                                 'emplub_empl_id' => $empleado->empl_id,
                                 'emplub_lcal_id' => $empleado->empl_lcal_id,
+                                'emplub_door_in_id' => null,
                                 'emplub_door_out_id' => $door->door_id,
                                 'emplub_ubicacion' => 0,
                                 'emplub_fecha' => $logAcceso->lgac_created_at,
