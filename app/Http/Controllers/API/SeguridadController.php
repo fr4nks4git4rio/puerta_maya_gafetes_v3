@@ -242,7 +242,7 @@ class SeguridadController extends Controller
     {
         $data = $this->checkFormatGafete($gafete);
         if (!$data)
-            return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Formato incorrecto de Gafete!']], 200);
+            return response()->json(['data' => ['tipo' => '', 'success' => false, 'msg' => 'Formato incorrecto de Gafete!']], 200);
 
         switch ($data['tipo']) {
             case 'GA':
