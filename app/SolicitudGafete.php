@@ -228,7 +228,7 @@ class SolicitudGafete extends Model
 
     public function SolicitudGafeteReasignar()
     {
-        return $this->hasOne('App\SolicitudGafeteReasignar', 'sgft_id', 'sgftre_sgft_id');
+        return $this->hasOne('App\SolicitudGafeteReasignar', 'sgftre_sgft_id', 'sgft_id');
     }
 
     public function Puertas()
