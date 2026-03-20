@@ -397,24 +397,50 @@ class SeguridadController extends Controller
                     $motos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'MOTO' ? ($motos + 1) : $motos) : ($door->door_tipo == 'MOTO' ? ($motos - 1) : $motos);
 
                     if (!$ubicacion->exists()) {
-                        DB::table('empleados_ubicacion')->insert([
-                            'emplub_empl_id' => $empleado->empl_id,
-                            'emplub_door_out_id' => $door->door_id,
-                            'emplub_ubicacion' => $door->door_direccion == 'ENTRADA',
-                            'emplub_fecha' => $logAcceso->lgac_created_at,
-                            'emplub_autos' => $autos,
-                            'emplub_motos' => $motos
-                        ]);
-                    } else {
-                        DB::table('empleados_ubicacion')
-                            ->where('emplub_empl_id', $empleado->empl_id)
-                            ->update([
-                                'emplub_door_out_id' => $door->door_id,
-                                'emplub_ubicacion' => $door->door_direccion == 'ENTRADA',
+                        if ($door->door_direccion == 'ENTRADA') {
+                            DB::table('empleados_ubicacion')->insert([
+                                'emplub_empl_id' => $empleado->empl_id,
+                                'emplub_lcal_id' => $empleado->empl_lcal_id,
+                                'emplub_door_in_id' => $door->door_id,
+                                'emplub_ubicacion' => 1,
                                 'emplub_fecha' => $logAcceso->lgac_created_at,
                                 'emplub_autos' => $autos,
                                 'emplub_motos' => $motos
                             ]);
+                        } else {
+                            DB::table('empleados_ubicacion')->insert([
+                                'emplub_empl_id' => $empleado->empl_id,
+                                'emplub_lcal_id' => $empleado->empl_lcal_id,
+                                'emplub_door_out_id' => $door->door_id,
+                                'emplub_ubicacion' => 0,
+                                'emplub_fecha' => $logAcceso->lgac_created_at,
+                                'emplub_autos' => $autos,
+                                'emplub_motos' => $motos
+                            ]);
+                        }
+                    } else {
+                        if ($door->door_direccion == 'ENTRADA') {
+                            DB::table('empleados_ubicacion')
+                                ->where('emplub_empl_id', $empleado->empl_id)
+                                ->update([
+                                    'emplub_door_in_id' => $door->door_id,
+                                    'emplub_door_out_id' => null,
+                                    'emplub_ubicacion' => 1,
+                                    'emplub_fecha' => $logAcceso->lgac_created_at,
+                                    'emplub_autos' => $autos,
+                                    'emplub_motos' => $motos
+                                ]);
+                        } else {
+                            DB::table('empleados_ubicacion')
+                                ->where('emplub_empl_id', $empleado->empl_id)
+                                ->update([
+                                    'emplub_door_out_id' => $door->door_id,
+                                    'emplub_ubicacion' => 0,
+                                    'emplub_fecha' => $logAcceso->lgac_created_at,
+                                    'emplub_autos' => $autos,
+                                    'emplub_motos' => $motos
+                                ]);
+                        }
                     }
 
                     DB::commit();
