@@ -105,9 +105,7 @@ class Empleado extends Model
 
     public function Ubicacion()
     {
-        return $this->hasOne('App\EmpleadoUbicacion', 'emplub_empl_id')->withDefault([
-            'emplub_ubicacion' => 0
-        ]);
+        return $this->hasOne('App\EmpleadoUbicacion', 'emplub_empl_id');
     }
 
     public function GafeteReasignado()

@@ -171,7 +171,7 @@ class SeguridadController extends Controller
                 if ($data['separador'] === '-') {
                     $empleado = Empleado::where('empl_id', $data['identificador'])->withTrashed()->first();
                     if ($empleado && $empleado->GafeteAcceso()) {
-                        if ($empleado->Ubicacion->emplub_ubicacion == 1)
+                        if ($empleado->Ubicacion && $empleado->Ubicacion->emplub_ubicacion == 1)
                             return response()->json(['data' => ['success' => false, 'msg' => 'El empleado se encuentra dentro del recinto!']], 200);
                     } else {
                         return response()->json(['data' => ['success' => false, 'msg' => 'Empleado no encontrado!']], 200);
@@ -179,7 +179,7 @@ class SeguridadController extends Controller
                 } elseif ($data['separador'] === '_') {
                     $solicitud = SolicitudGafete::where('sgft_id', $data['identificador'])->withTrashed()->first();
                     if ($solicitud->count() > 0) {
-                        if ($solicitud->Empleado->Ubicacion->emplub_ubicacion == 1)
+                        if ($solicitud->Empleado->Ubicacion && $solicitud->Empleado->Ubicacion->emplub_ubicacion == 1)
                             return response()->json(['data' => ['success' => false, 'msg' => 'El empleado se encuentra dentro del recinto!']], 200);
                         $empleado = $solicitud->Empleado;
                     } else {
@@ -250,7 +250,7 @@ class SeguridadController extends Controller
                     $empleado = Empleado::where('empl_id', $data['identificador'])->withTrashed()->get();
                     if ($empleado->count() > 0 && $empleado->first()->GafeteAcceso()) {
                         $empleado = $empleado->first();
-                        if ($empleado->Ubicacion->emplub_ubicacion == 0)
+                        if ($empleado->Ubicacion && $empleado->Ubicacion->emplub_ubicacion == 0)
                             return response()->json(['data' => ['success' => false, 'msg' => 'El empleado no se encuentra dentro del recinto!']], 200);
                     } else {
                         return response()->json(['data' => ['success' => false, 'msg' => 'Empleado no encontrado!']], 200);
@@ -259,7 +259,7 @@ class SeguridadController extends Controller
                     $solicitud = SolicitudGafete::where('sgft_id', $data['identificador'])->withTrashed()->get();
                     if ($solicitud->count() > 0) {
                         $solicitud = $solicitud->first();
-                        if ($solicitud->Empleado->Ubicacion->emplub_ubicacion == 0)
+                        if ($solicitud->Empleado->Ubicacion && $solicitud->Empleado->Ubicacion->emplub_ubicacion == 0)
                             return response()->json(['data' => ['success' => false, 'msg' => 'El empleado no se encuentra dentro del recinto!']], 200);
                         $empleado = $solicitud->Empleado;
                     } else {
@@ -287,17 +287,17 @@ class SeguridadController extends Controller
                 'lgac_time' => $fecha->format('Y-m-d') . 'T' . $fecha->format('H:i:s') . 'Z'
             ]);
             $controllerService = new ControladoraAccesoService(Controladora::find($empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id));
-            $ubicacion = $empleado->Ubicacion;
-            if ($ubicacion->exists() && in_array($ubicacion->PuertaEntrada->door_tipo, ['AUTO', 'MOTO']))
-                $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_tipo', 'PEATONAL')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
-            else
-                $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
+            // $ubicacion = $empleado->Ubicacion;
+            // if ($ubicacion->exists() && in_array($ubicacion->PuertaEntrada->door_tipo, ['AUTO', 'MOTO']))
+            //     $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_tipo', 'PEATONAL')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
+            // else
+            $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'SALIDA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
             $data = [
                 'empleado' => $empleado,
                 'puertas_numeros' => $numeros
             ];
-            // $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
-            if ($ubicacion->exists()) {
+            $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
+            if ($ubicacion) {
                 DB::table('empleados_ubicacion')->where('emplub_empl_id', $ubicacion->emplub_empl_id)->update([
                     'emplub_door_out_id' => $puerta,
                     'emplub_ubicacion' => 0,
@@ -357,7 +357,6 @@ class SeguridadController extends Controller
                         'lgac_created_at' => str_replace(['T', 'Z'], [' ', ''], $data['dateTime'])
                     ]);
                     $controllerService = new ControladoraAccesoService($controladora);
-                    $ubicacion = $empleado->Ubicacion;
 
                     if ($door->door_direccion == 'SALIDA') {
                         $numeros = implode(
@@ -390,13 +389,14 @@ class SeguridadController extends Controller
                         return ['success' => false];
                     }
 
-                    $autos = $ubicacion->exists() ? $ubicacion->emplub_autos : 0;
-                    $motos = $ubicacion->exists() ? $ubicacion->emplub_motos : 0;
+                    $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
+                    $autos = $ubicacion ? max($ubicacion->emplub_autos, 0) : 0;
+                    $motos = $ubicacion ? max($ubicacion->emplub_motos, 0) : 0;
 
                     $autos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'AUTO' ? ($autos + 1) : $autos) : ($door->door_tipo == 'AUTO' ? ($autos - 1) : $autos);
                     $motos = $door->door_direccion == 'ENTRADA' ? ($door->door_tipo == 'MOTO' ? ($motos + 1) : $motos) : ($door->door_tipo == 'MOTO' ? ($motos - 1) : $motos);
 
-                    if (!$ubicacion->exists()) {
+                    if (!$ubicacion) {
                         if ($door->door_direccion == 'ENTRADA') {
                             DB::table('empleados_ubicacion')->insert([
                                 'emplub_empl_id' => $empleado->empl_id,
