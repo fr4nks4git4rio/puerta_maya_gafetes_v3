@@ -70,31 +70,26 @@ class Kernel extends ConsoleKernel
             //Otorgar en la controladora los permisos autorizados
             $solicitudes = SolicitudGafeteReasignar::where('sgftre_estado', 'ASIGNADO')->get();
             foreach ($solicitudes as $solicitud) {
-                set_time_limit(60);
-                DB::beginTransaction();
 
-                $gafeteRfid = $solicitud->Gafete()->first()->getVGafeteRfidV3();
+                $gafete = $solicitud->Gafete;
+                $gafeteRfid = $gafete->getVGafeteRfidV3();
                 $controladora = Controladora::find($gafeteRfid->controladora_id);
-
-                $crear = new CrearTarjetaV3($gafeteRfid);
-                $res = $crear->execute();
-                if ($res == false) {
-                    DB::rollBack();
-                    Log::error("Ocurrió un error al crear la tarjeta en la controladora $controladora->ctrl_nombre.");
-                }
 
                 $activar = new ActivarTarjetaV3($gafeteRfid);
                 $res = $activar->execute();
                 if ($res == false) {
-                    DB::rollBack();
-                    Log::error("Ocurrió un error al activar la tarjeta en la controladora $controladora->ctrl_nombre.");
+                    Log::error("Ocurrió un error al activar la tarjeta $gafeteRfid->numero_rfid en la controladora $controladora->ctrl_nombre.");
+                    continue;
                 }
 
                 $solicitud->sgftre_estado = 'AUTORIZADO';
                 $solicitud->sgftre_fecha_autorizado = now();
                 $solicitud->save();
-                DB::commit();
-                sleep(1);
+
+                $gafete->sgft_permisos = $solicitud->sgftre_permisos;
+                $gafete->save();
+
+                usleep(300000);
             }
         })->between('00:00', '00:20');
 
@@ -103,24 +98,7 @@ class Kernel extends ConsoleKernel
             //Quitar en la controladora los permisos autorizados y eliminar las solicitud de permisos para las solicitudes en estado CANCELADO
             $solicitudes = SolicitudGafeteReasignar::where('sgftre_estado', 'CANCELADO')->get();
             foreach ($solicitudes as $solicitud) {
-                set_time_limit(60);
-                DB::beginTransaction();
-
-                $solicitudGafete = SolicitudGafete::find($solicitud->sgftre_sgft_id);
-                $solicitudGafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->detach();
-
-                $gafeteRfid = $solicitud->Gafete()->first()->getVGafeteRfidV3();
-                $controladora = Controladora::find($gafeteRfid->controladora_id);
-
-                $activar = new ActivarTarjetaV3($gafeteRfid);
-                $res = $activar->execute();
-                if ($res == false) {
-                    DB::rollBack();
-                    Log::error("Ocurrió un error al activar la tarjeta en la controladora $controladora->ctrl_nombre.");
-                }
                 $solicitud->delete();
-                DB::commit();
-                sleep(1);
             }
         })->between('00:00', '00:20');
 

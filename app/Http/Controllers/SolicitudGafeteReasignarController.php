@@ -14,6 +14,7 @@ use App\SolicitudGafete;
 use App\SolicitudGafeteReasignar;
 use App\User;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -342,11 +343,38 @@ class SolicitudGafeteReasignarController extends Controller
                 case 'ASIGNADO':
                     $solicitudGafete = SolicitudGafete::find($solicitud->sgftre_sgft_id);
                     $solicitudGafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->detach();
+                    $solicitudGafete->sgft_permisos = 'PEATONAL';
+                    $solicitudGafete->save();
                     $solicitud->delete();
                     break;
                 case 'AUTORIZADO':
-                    $solicitud->sgftre_estado = 'CANCELADO';
-                    $solicitud->save();
+                    DB::beginTransaction();
+                    try {
+                        $solicitud->sgftre_estado = 'CANCELADO';
+                        $solicitud->save();
+
+                        $gafete = $solicitud->Gafete;
+
+                        $gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->detach();
+                        
+                        $gafete->sgft_permisos = 'PEATONAL';
+                        $gafete->save();
+
+                        $gafeteRfid = $gafete->getVGafeteRfidV3();
+                        $controladora = Controladora::find($gafeteRfid->controladora_id);
+
+                        $activar = new ActivarTarjetaV3($gafeteRfid);
+                        $res = $activar->execute();
+                        if ($res == false) {
+                            DB::rollBack();
+                            Log::error("Ocurrió un error al cambiar los permisos de la tarjeta $gafeteRfid->numero_rfid en la controladora $controladora->ctrl_nombre.");
+                            return response()->json($this->ajaxResponse(false, "Ocurrió un error al cambiar los permisos de la tarjeta $gafeteRfid->numero_rfid en la controladora $controladora->ctrl_nombre."));
+                        }
+                    } catch (Exception $e) {
+                        DB::rollBack();
+                        return response()->json($this->ajaxResponse(false, "Error en el servidor!", $e->getMessage() . $e->getFile() . $e->getLine()));
+                    }
+                    DB::commit();
                     break;
                 case 'CANCELADO':
                     return response()->json($this->ajaxResponse(false, 'La solicitud está en proceso de <b>CANCELACIÓN</b>. No puede ser eliminada manualmente.'));
