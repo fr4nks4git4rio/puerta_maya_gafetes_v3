@@ -342,7 +342,7 @@ class SolicitudGafeteReasignarController extends Controller
                     break;
                 case 'ASIGNADO':
                     $solicitudGafete = SolicitudGafete::find($solicitud->sgftre_sgft_id);
-                    $solicitudGafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->detach();
+                    $solicitudGafete->Puertas()->detach($solicitudGafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->pluck('door_id'));
                     $solicitudGafete->sgft_permisos = 'PEATONAL';
                     $solicitudGafete->save();
                     $solicitud->delete();
@@ -356,11 +356,13 @@ class SolicitudGafeteReasignarController extends Controller
                         $gafete = $solicitud->Gafete;
                         $gafeteRfid = $solicitud->Gafete->getVGafeteRfidV3();
 
-                        $gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->detach();
+
+                        $gafete->Puertas()->detach($gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->pluck('door_id'));
 
                         $gafete->sgft_permisos = 'PEATONAL';
                         $gafete->save();
-                        
+
+
                         $controladora = Controladora::find($gafeteRfid->controladora_id);
 
                         $activar = new ActivarTarjetaV3($gafeteRfid);
@@ -474,12 +476,6 @@ class SolicitudGafeteReasignarController extends Controller
                 return response()->json($this->ajaxResponse(true, $response_message, $response_data));
             } catch (\Exception $e) {
                 DB::rollBack();
-                // $solicitud->sgftre_estado = 'PENDIENTE';
-                // $solicitud->save();
-                // if ($solicitud->Gafete) {
-                //     $solicitud->Gafete->Puertas()->detach();
-                //     $solicitud->Gafete->delete();
-                // }
                 return response()->json($this->ajaxResponse(false, $e->getMessage() . $e->getFile() . $e->getLine()));
             }
         }
