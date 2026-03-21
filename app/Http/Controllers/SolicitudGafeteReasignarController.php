@@ -354,13 +354,13 @@ class SolicitudGafeteReasignarController extends Controller
                         $solicitud->save();
 
                         $gafete = $solicitud->Gafete;
+                        $gafeteRfid = $solicitud->Gafete->getVGafeteRfidV3();
 
                         $gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->detach();
-                        
+
                         $gafete->sgft_permisos = 'PEATONAL';
                         $gafete->save();
-
-                        $gafeteRfid = $gafete->getVGafeteRfidV3();
+                        
                         $controladora = Controladora::find($gafeteRfid->controladora_id);
 
                         $activar = new ActivarTarjetaV3($gafeteRfid);
