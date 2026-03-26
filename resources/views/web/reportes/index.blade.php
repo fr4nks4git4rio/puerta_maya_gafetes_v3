@@ -115,6 +115,13 @@
                         </div>
 
 
+                        <div class="col-sm-1 ctrl-nombre-gafete">
+                            <label for="estado">Nombre Gafete</label>
+                        </div>
+                        <div class="col-sm-2 ctrl-nombre-gafete">
+                            {!! Form::text('nombre_gafete', null , ["class"=>"form-control",'id'=>'nombre_gafete'])!!}
+                        </div>
+
                         <div class="col-sm-1 ctrl-numero-rfid">
                             <label for="estado">Numero Tarjeta</label>
                         </div>
@@ -256,7 +263,8 @@
                     $('.ctrl-estados-gipa').addClass('d-none');
                     $('.ctrl-estados-cpago').addClass('d-none');
                     $('.ctrl-locales').addClass('d-none');
-                    $('.ctrl-rasonsociales').addClass('d-none');
+                    $('.ctrl-razonsociales').addClass('d-none');
+                    $('.ctrl-nombre-gafete').addClass('d-none');
                     $('.ctrl-numero-rfid').addClass('d-none');
                     $('.ctrl-tipo-gafete').addClass('d-none');
                     $('.ctrl-hora').addClass('d-none');
@@ -295,6 +303,10 @@
 
                     if (config.estados_cpago == true) {
                         $('.ctrl-estados-cpago').removeClass('d-none');
+                    }
+
+                    if (config.nombre_gafete == true) {
+                        $('.ctrl-nombre-gafete').removeClass('d-none');
                     }
 
                     if (config.numero_rfid == true) {
@@ -354,6 +366,7 @@
                     let razon_social = $('#razon_social').val();
                     let dia = $('#dia').val();
                     let numero_rfid = $('#numero_rfid').val();
+                    let nombre_gafete = $('#nombre_gafete').val();
                     let tipo_gafete = $('#tipo_gafete').val();
                     let estado_cpago = $('#estado_cpago').val();
                     let hora = $('#hora').val();
@@ -386,6 +399,7 @@
                         'estado_cpago': estado_cpago,
                         'local': local,
                         'razon_social': razon_social,
+                        'nombre_gafete': nombre_gafete,
                         'numero_rfid': numero_rfid,
                         'tipo_gafete': tipo_gafete,
                         'hora': hora,

@@ -762,20 +762,24 @@ Route::group(['prefix' => '/reportes'], function () {
 
     Route::get('/solicitudes-mantenimiento-vigentes', 'ReporteController@solicitudesMantenimientoVigentes')->middleware(['role:MANTENIMIENTO|RECEPCIÓN']);
     Route::get('/permisos-temporales', 'ReporteController@permisosTemporales')->middleware(['role:SEGURIDAD|RECEPCIÓN']);
+    Route::get('/gafetes-impresos', 'ReporteController@gafetesImpresos')->middleware(['role:RECEPCIÓN|LOCATARIO']);
     Route::get('/gafetes-impresos-acceso', 'ReporteController@gafetesImpresosAcceso')->middleware(['role:RECEPCIÓN|LOCATARIO']);
     Route::get('/gafetes-impresos-estacionamiento', 'ReporteController@gafetesImpresosEstacionamiento')->middleware(['role:RECEPCIÓN']);
+    Route::get('/historico-permisos-estacionamiento', 'ReporteController@historicoPermisosEstacionamiento')->middleware(['role:RECEPCIÓN']);
 
     Route::get('/accesos-vehicular', 'ReporteController@accesosVehicular')->middleware(['role:SEGURIDAD']);
     Route::get('/accesos-vehicular-6pm', 'ReporteController@accesosVehicular6pm')->middleware(['role:SEGURIDAD']);
 
     Route::get('/accesos-gafete', 'ReporteController@accesosGafete')->middleware(['role:SEGURIDAD']);
     Route::get('/accesos-gafete-6pm', 'ReporteController@accesosGafete6pm')->middleware(['role:SEGURIDAD']);
+    Route::get('/ajenos-en-casa', 'ReporteController@ajenosEnCasa')->middleware(['role:SEGURIDAD']);
 
     Route::get('/gafetes-desactivados', 'ReporteController@gafetesDesactivados')->middleware(['role:RECEPCIÓN']);
 
     Route::get('/comprobantes-pago', 'ReporteController@comprobantesPago')->middleware(['role:RECEPCIÓN|CONTABILIDAD']);
 
     Route::get('/saldo-locales', 'ReporteController@saldoLocales')->middleware(['role:RECEPCIÓN|CONTABILIDAD']);
+
 });
 
 Route::group(['prefix' => '/disenno_gafetes'], function () {

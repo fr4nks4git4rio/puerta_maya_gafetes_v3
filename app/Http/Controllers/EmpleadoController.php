@@ -139,7 +139,9 @@ class EmpleadoController extends Controller
                 ])
                     ->join('cat_cargos', 'empl_crgo_id', 'crgo_id')
                     ->leftJoin('solicitudes_gafetes_reasignar', 'empl_id', '=', 'sgftre_empl_id')
+                    ->whereNull('sgftre_deleted_at')
                     ->whereEmplLcalId($local->lcal_id)
+                    ->groupBy('empl_id')
                     ->orderBy('empl_nombre')
             )
                 ->editColumn('empl_thumb', function (Empleado $model) {

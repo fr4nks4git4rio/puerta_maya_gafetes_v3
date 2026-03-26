@@ -16,6 +16,7 @@ use App\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -280,7 +281,15 @@ class SolicitudGafeteReasignarController extends Controller
                 $solicitud->sgftre_anio = $this->data['sgftre_anio'];
                 $solicitud->sgftre_permisos = $permisos;
                 $solicitud->sgftre_fecha_solicitado = now();
+                $solicitud->sgftre_solicitado_por_id = auth()->user()->id;
                 $solicitud->save();
+
+                $solicitud->CicloVida()->create([
+                    'sgftrecs_sgftre_estado' => 'PENDIENTE',
+                    'sgftrece_fecha' => $solicitud->sgftre_fecha_solicitado,
+                    'sgftrece_realizado_por_id' => auth()->user()->id,
+                    'sgftrece_created_at' => now()
+                ]);
             } catch (\Exception $e) {
                 DB::rollBack();
                 return response()->json($this->ajaxResponse(false, "Error en el servidor!", $e->getMessage() . $e->getFile() . $e->getLine()));
@@ -314,14 +323,27 @@ class SolicitudGafeteReasignarController extends Controller
 
                 $permisos = implode(',', $this->data['sgftre_permisos']);
 
+                $resolisitado = $solicitud->sgftre_estado != 'PENDIENTE';
+
                 $solicitud->sgftre_empl_id = $this->data['sgftre_empl_id'];
                 $solicitud->sgftre_lcal_id = $this->data['sgftre_lcal_id'];
                 $solicitud->sgftre_sgft_id = $this->data['sgftre_sgft_id'];
                 $solicitud->sgftre_anio = $this->data['sgftre_anio'];
                 $solicitud->sgftre_permisos = $permisos;
-                $solicitud->sgftre_estado = 'PENDIENTE';
-                $solicitud->sgftre_fecha_solicitado = now();
+                if ($resolisitado) {
+                    $solicitud->sgftre_estado = 'PENDIENTE';
+                    $solicitud->sgftre_fecha_solicitado = now();
+                    $solicitud->sgftre_solicitado_por_id = auth()->user()->id;
+                }
                 $solicitud->save();
+
+                if ($resolisitado)
+                    $solicitud->CicloVida()->create([
+                        'sgftrecs_sgftre_estado' => 'PENDIENTE',
+                        'sgftrece_fecha' => $solicitud->sgftre_fecha_solicitado,
+                        'sgftrece_realizado_por_id' => auth()->user()->id,
+                        'sgftrece_created_at' => now()
+                    ]);
             } catch (\Exception $e) {
                 DB::rollBack();
                 return response()->json($this->ajaxResponse(false, "Error en el servidor!", $e->getMessage() . $e->getFile() . $e->getLine()));
@@ -338,6 +360,8 @@ class SolicitudGafeteReasignarController extends Controller
             switch ($solicitud->sgftre_estado) {
                 case 'PENDIENTE':
                 case 'DENEGADO':
+                    $solicitud->sgftre_eliminado_por_id = auth()->user()->id;
+                    $solicitud->save();
                     $solicitud->delete();
                     break;
                 case 'ASIGNADO':
@@ -345,38 +369,23 @@ class SolicitudGafeteReasignarController extends Controller
                     $solicitudGafete->Puertas()->detach($solicitudGafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->pluck('door_id'));
                     $solicitudGafete->sgft_permisos = 'PEATONAL';
                     $solicitudGafete->save();
+
+                    $solicitud->sgftre_eliminado_por_id = auth()->user()->id;
+                    $solicitud->save();
                     $solicitud->delete();
                     break;
                 case 'AUTORIZADO':
-                    DB::beginTransaction();
-                    try {
-                        $solicitud->sgftre_estado = 'CANCELADO';
-                        $solicitud->save();
+                    $solicitud->sgftre_fecha_cancelado = now();
+                    $solicitud->sgftre_estado = 'CANCELADO';
+                    $solicitud->sgftre_cancelado_por_id = auth()->user()->id;
+                    $solicitud->save();
 
-                        $gafete = $solicitud->Gafete;
-                        $gafeteRfid = $solicitud->Gafete->getVGafeteRfidV3();
-
-
-                        $gafete->Puertas()->detach($gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->pluck('door_id'));
-
-                        $gafete->sgft_permisos = 'PEATONAL';
-                        $gafete->save();
-
-
-                        $controladora = Controladora::find($gafeteRfid->controladora_id);
-
-                        $activar = new ActivarTarjetaV3($gafeteRfid);
-                        $res = $activar->execute();
-                        if ($res == false) {
-                            DB::rollBack();
-                            Log::error("Ocurrió un error al cambiar los permisos de la tarjeta $gafeteRfid->numero_rfid en la controladora $controladora->ctrl_nombre.");
-                            return response()->json($this->ajaxResponse(false, "Ocurrió un error al cambiar los permisos de la tarjeta $gafeteRfid->numero_rfid en la controladora $controladora->ctrl_nombre."));
-                        }
-                    } catch (Exception $e) {
-                        DB::rollBack();
-                        return response()->json($this->ajaxResponse(false, "Error en el servidor!", $e->getMessage() . $e->getFile() . $e->getLine()));
-                    }
-                    DB::commit();
+                    $solicitud->CicloVida()->create([
+                        'sgftrecs_sgftre_estado' => 'CANCELADO',
+                        'sgftrece_fecha' => $solicitud->sgftre_fecha_cancelado,
+                        'sgftrece_realizado_por_id' => auth()->user()->id,
+                        'sgftrece_created_at' => now()
+                    ]);
                     break;
                 case 'CANCELADO':
                     return response()->json($this->ajaxResponse(false, 'La solicitud está en proceso de <b>CANCELACIÓN</b>. No puede ser eliminada manualmente.'));
@@ -443,7 +452,15 @@ class SolicitudGafeteReasignarController extends Controller
                 $solicitud = SolicitudGafeteReasignar::findOrFail($this->data['sgftre_id']);
                 $solicitud->sgftre_estado = 'ASIGNADO';
                 $solicitud->sgftre_fecha_asignado = now();
+                $solicitud->sgftre_asignado_por_id = auth()->user()->id;
                 $solicitud->save();
+
+                $solicitud->CicloVida()->create([
+                    'sgftrecs_sgftre_estado' => 'ASIGNADO',
+                    'sgftrece_fecha' => $solicitud->sgftre_fecha_asignado,
+                    'sgftrece_realizado_por_id' => auth()->user()->id,
+                    'sgftrece_created_at' => now()
+                ]);
 
                 $solicitud->Gafete->sgft_permisos = $solicitud->sgftre_permisos;
                 $solicitud->Gafete->save();
@@ -509,7 +526,16 @@ class SolicitudGafeteReasignarController extends Controller
                 $solicitud->sgftre_estado = 'DENEGADO';
                 $solicitud->sgftre_comentarios_rechazo = $this->data['sgftre_comentarios_rechazo'];
                 $solicitud->sgftre_fecha_denegado = now();
+                $solicitud->sgftre_denegado_por_id = auth()->user()->id;
                 $solicitud->save();
+
+                $solicitud->CicloVida()->create([
+                    'sgftrecs_sgftre_estado' => 'DENEGADO',
+                    'sgftrece_fecha' => $solicitud->sgftre_fecha_denegado,
+                    'sgftrece_comentarios' => $solicitud->sgftre_comentarios_rechazo,
+                    'sgftrece_realizado_por_id' => auth()->user()->id,
+                    'sgftrece_created_at' => now()
+                ]);
 
                 DB::commit();
                 return response()->json($this->ajaxResponse(true, 'Solicitud <b>RECHAZADA</b> correctamente.'));

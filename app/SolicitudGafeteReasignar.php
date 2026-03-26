@@ -13,7 +13,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 
 class SolicitudGafeteReasignar extends Model
 {
-    use LogsActivity;
+    use LogsActivity, SoftDeletes;
 
 
     protected $table = 'solicitudes_gafetes_reasignar';
@@ -25,14 +25,15 @@ class SolicitudGafeteReasignar extends Model
 
     const CREATED_AT = 'sgftre_created_at';
     const UPDATED_AT = 'sgftre_updated_at';
+    const DELETED_AT = 'sgftre_deleted_at';
 
-    protected $dates = ['sgftre_created_at', 'sgftre_updated_at'];
+    protected $dates = ['sgftre_created_at', 'sgftre_updated_at', 'sgftre_deleted_at'];
 
     ////LOG CONFIG///////////////////////////////////////////////////
 
     protected static $logName = 'Solicitudes Gafete Reasignar';
     protected static $logAttributes = ['*'];
-    protected static $logAttributesToIgnore = ['sgftre_created_at', 'sgftre_updated_at'];
+    protected static $logAttributesToIgnore = ['sgftre_created_at', 'sgftre_updated_at', 'sgftre_deleted_at'];
     protected static $logOnlyDirty = true;
 
     public function getDescriptionForEvent(string $eventName): string
@@ -68,5 +69,10 @@ class SolicitudGafeteReasignar extends Model
     public function Gafete()
     {
         return $this->belongsTo('App\SolicitudGafete', 'sgftre_sgft_id');
+    }
+
+    public function CicloVida()
+    {
+        return $this->hasMany('App\SolicitudGafeteReasignarCambioEstado', 'sgftrece_sgftre_id');
     }
 }

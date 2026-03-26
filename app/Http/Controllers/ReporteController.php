@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\ComprobantePago;
+use App\EmpleadoUbicacion;
 use App\Exports\ComprobantesPagoExport;
 use App\Exports\SaldoLocalesExport;
 use App\Local;
@@ -16,7 +17,9 @@ use App\Reports\GafetesImpresosEstacionamientoReport;
 use App\Reports\SaldoLocalesReport;
 use App\SolicitudGafete;
 use App\GafeteEstacionamiento;
+use App\Reports\AjenosEnCasaReport;
 use App\Reports\GafetesDesactivadosReport;
+use App\Reports\HistoricoPermisosEstacionamientoReport;
 use App\Reports\PermisosTemporalesReport;
 use App\Reports\SolicitudesMantenimientoVigentesReport;
 use App\VGafetesRfid;
@@ -24,6 +27,7 @@ use App\VGafetesRfidV3;
 use App\VLogAcceso;
 use App\VLogAccesoV3;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -62,8 +66,8 @@ class ReporteController extends Controller
 
                 [
                     'key' => 'GFT_IMPR',
-                    'url' => url('reportes/gafetes-impresos-acceso'),
-                    'nombre' => 'Gafetes impresos por acceso',
+                    'url' => url('reportes/gafetes-impresos'),
+                    'nombre' => 'Gafetes impresos',
                     'fechas' => true,
                     'estados_ptmp' => false,
                     'estados_gipa' => true,
@@ -73,17 +77,30 @@ class ReporteController extends Controller
                     'do_xlsx' => false,
                 ],
 
-                [
-                    'key' => 'GFT_EST',
-                    'url' => url('reportes/gafetes-impresos-estacionamiento'),
-                    'nombre' => 'Gafetes impresos de estacionamiento',
-                    'fechas' => true,
-                    'estados_ptmp' => false,
-                    'locales' => true,
-                    'do_html' => true,
-                    'do_pdf' => true,
-                    'do_xlsx' => false,
-                ],
+                // [
+                //     'key' => 'GFT_IMPR_ACC',
+                //     'url' => url('reportes/gafetes-impresos-acceso'),
+                //     'nombre' => 'Gafetes impresos por acceso',
+                //     'fechas' => true,
+                //     'estados_ptmp' => false,
+                //     'estados_gipa' => true,
+                //     'locales' => true,
+                //     'do_html' => true,
+                //     'do_pdf' => true,
+                //     'do_xlsx' => false,
+                // ],
+
+                // [
+                //     'key' => 'GFT_IMPR_EST',
+                //     'url' => url('reportes/gafetes-impresos-estacionamiento'),
+                //     'nombre' => 'Gafetes impresos de estacionamiento',
+                //     'fechas' => true,
+                //     'estados_ptmp' => false,
+                //     'locales' => true,
+                //     'do_html' => true,
+                //     'do_pdf' => true,
+                //     'do_xlsx' => false,
+                // ],
 
                 [
                     'key' => 'SOL_MANT_VIG',
@@ -137,6 +154,21 @@ class ReporteController extends Controller
                     'do_xlsx' => false,
                 ],
 
+                [
+                    'key' => 'HIST_PERM_EST',
+                    'url' => url('reportes/historico-permisos-estacionamiento'),
+                    'nombre' => 'Histórico de permisos de estacionamiento',
+                    'fechas' => true,
+                    'estados_ptmp' => false,
+                    'locales' => false,
+                    'razonsociales' => false,
+                    'nombre_gafete' => true,
+                    'numero_rfid' => true,
+                    'do_html' => true,
+                    'do_pdf' => true,
+                    'do_xlsx' => false,
+                ],
+
             ];
 
         return $this->renderIndex($reportes);
@@ -183,19 +215,19 @@ class ReporteController extends Controller
                 ],
 
 
-                [
-                    'key' => 'ACCESS_VEHIC',
-                    'url' => url('reportes/accesos-vehicular'),
-                    'nombre' => 'Acceso al estacionamiento de vehículos',
-                    'fechas' => true,
-                    'estados_ptmp' => false,
-                    'locales' => false,
-                    'numero_rfid' => true,
-                    'hora' => true,
-                    'do_html' => true,
-                    'do_pdf' => true,
-                    'do_xlsx' => false,
-                ],
+                // [
+                //     'key' => 'ACCESS_VEHIC',
+                //     'url' => url('reportes/accesos-vehicular'),
+                //     'nombre' => 'Acceso al estacionamiento de vehículos',
+                //     'fechas' => true,
+                //     'estados_ptmp' => false,
+                //     'locales' => false,
+                //     'numero_rfid' => true,
+                //     'hora' => true,
+                //     'do_html' => true,
+                //     'do_pdf' => true,
+                //     'do_xlsx' => false,
+                // ],
 
                 // [
                 //     'key' => 'ACCESS_VEHIC_6PM',
@@ -219,7 +251,7 @@ class ReporteController extends Controller
                     'dia' => true,
                     'estados_ptmp' => false,
                     'numero_rfid' => true,
-                    'locales' => false,
+                    'locales' => true,
                     'tipos_gafete' => true,
                     'hora' => true,
 
@@ -249,13 +281,15 @@ class ReporteController extends Controller
                     'fechas' => false,
                     'dia' => false,
                     'estados_ptmp' => false,
-                    'numero_rfid' => false,
-                    'locales' => true,
+                    'nombre_gafete' => true,
+                    'numero_rfid' => true,
+                    'locales' => false,
                     'tipos_gafete' => false,
                     'hora' => false,
+                    'razonsociales' => false,
 
-                    'do_html' => false,
-                    'do_pdf' => false,
+                    'do_html' => true,
+                    'do_pdf' => true,
                     'do_xlsx' => false,
                 ],
             ];
@@ -528,6 +562,61 @@ class ReporteController extends Controller
     }
 
 
+    public function gafetesImpresos(Request $request)
+    {
+
+        $inicio = \Carbon\Carbon::createFromFormat("Y-m-d", $request->get('inicio'));
+        $fin = \Carbon\Carbon::createFromFormat("Y-m-d", $request->get('fin'));
+        $local = $request->get('local');
+
+
+        if ($inicio->gt($fin)) {
+            return response()->json($this->ajaxResponse(false, "Fechas erroneas"));
+        }
+
+
+        $records = SolicitudGafete::whereRaw(" DATE(sgft_fecha) BETWEEN '{$inicio->format('Y-m-d')}' AND '{$fin->format('Y-m-d')}'");
+
+        $estado = $this->data['estado_gipa'];
+        if ($estado != "") {
+            $records->whereSgftEstado($estado);
+            //            $records->whereIn('sgft_estado', ['IMPRESA', 'ENTREGADA']);
+        }
+
+
+        if ($local != '') {
+            $records->whereSgftLcalId($local);
+        }
+
+        $records->with('Local');
+
+        $records = $records->orderBy('sgft_fecha', 'desc')->get();
+
+
+        if ($request->get('pdf') == 1) {
+
+            $report = new GafetesImpresosAccesoReport(null, true, false);
+            $report->setRecords($records);
+            $report->setInicio($inicio);
+            $report->setFin($fin);
+
+            return $report->exec();
+        }
+
+        $reporte = view(
+            'web.reportes.gafetes-impresos',
+            compact('records', 'inicio', 'fin')
+        )
+            ->render();
+
+        return response()->json($this->ajaxResponse(
+            true,
+            "Reporte generado exitosamente",
+            ['report' =>
+            $reporte]
+        ));
+    }
+
     public function gafetesImpresosAcceso(Request $request)
     {
 
@@ -757,6 +846,7 @@ class ReporteController extends Controller
     {
 
         $numero = $request->get('numero_rfid');
+        $local = $request->get('local');
         $dia = $request->get('dia');
         if ($dia == "") {
             $dia = date('Y-m-d');
@@ -773,7 +863,12 @@ class ReporteController extends Controller
 
         if ($tipo) {
             // $where_tipo = "tipo = '$tipo'";
-            $records->whereRaw("tipo = '$tipo'");
+            $records->where('tipo', $tipo);
+        }
+
+        if ($local) {
+            // $where_tipo = "tipo = '$tipo'";
+            $records->where("lcal_id", $local);
         }
 
         if ($numero != '') {
@@ -872,6 +967,135 @@ class ReporteController extends Controller
         ));
     }
 
+    public function ajenosEnCasa(Request $request)
+    {
+
+        $numero = $request->get('numero_rfid');
+        $nombre_gafete = $request->get('nombre_gafete');
+
+        $records = DB::table('v_gafetes_rfid_v3 as gafete')
+            ->select(
+                'gafete.numero_rfid',
+                'e.empl_nombre as empleado',
+                'gafete.tipo as clase',
+                'eu.emplub_fecha as fecha',
+                DB::raw("CONCAT(door.door_nombre, ' (', door.door_numero, ')') as puerta")
+            )
+            ->leftJoin('solicitudes_gafetes as sgft', 'sgft.sgft_id', '=', 'gafete.ref_id')
+            ->leftJoin('empleados as e', 'e.empl_id', '=', 'gafete.empl_id')
+            ->leftJoin('empleados_ubicacion as eu', 'eu.emplub_empl_id', '=', 'e.empl_id')
+            ->leftJoin('puertas as door', 'door.door_id', '=', 'eu.emplub_door_in_id')
+            ->whereNotNull('sgft.sgft_activated_at')
+            ->whereNull('sgft.sgft_disabled_at')
+            ->whereNull('sgft.sgft_deleted_at')
+            ->where('eu.emplub_ubicacion', 1)
+            ->where('e.empl_nombre', 'like', 'Visitante%');
+
+        if ($numero) {
+            $records->where('gafete.numero_rfid', 'like', "%$numero%");
+        }
+
+        if ($nombre_gafete) {
+            $records->where('e.empl_nombre', 'like', "%$nombre_gafete%");
+        }
+
+        $records = $records->get();
+
+        $dia = now()->format('d/m/Y H:i');
+
+        if ($request->get('pdf') == 1) {
+
+            $view = 'pdf-reports.ajenos-en-casa';
+            $report = new AjenosEnCasaReport(null, true, false);
+
+            $report->setView($view)
+                ->setRecords($records)
+                ->setDia($dia);
+
+            return $report->exec();
+        }
+
+
+        $view = 'web.reportes.ajenos-en-casa';
+        $reporte = view($view, compact('records', 'dia'))
+            ->render();
+
+        return response()->json($this->ajaxResponse(
+            true,
+            "Reporte generado exitosamente",
+            ['report' =>
+            $reporte]
+        ));
+    }
+
+    public function historicoPermisosEstacionamiento(Request $request)
+    {
+
+        $inicio = $request->get('inicio');
+        $fin = $request->get('fin');
+        $numero = $request->get('numero_rfid');
+        $nombre_gafete = $request->get('nombre_gafete');
+
+        $records = DB::table('solicitudes_gr_cambios_estados as sgftrece')
+            ->select(
+                'empl.empl_nombre as empleado',
+                'sgft.sgft_numero as numero_tarjeta',
+                'lcal.lcal_nombre_comercial as local',
+                'sgftrecs_sgftre_estado as estado',
+                'sgftrece_fecha as fecha'
+            )
+            ->leftJoin('solicitudes_gafetes_reasignar as sgftre', 'sgftre.sgftre_id', '=', 'sgftrece.sgftrece_sgftre_id')
+            ->leftJoin('empleados as empl', 'empl.empl_id', '=', 'sgftre_empl_id')
+            ->leftJoin('solicitudes_gafetes as sgft', 'sgft.sgft_id', '=', 'sgftre.sgftre_sgft_id')
+            ->leftJoin('locales as lcal', 'lcal.lcal_id', '=', 'sgftre.sgftre_lcal_id')
+            ->whereDate('sgftrece.sgftrece_fecha', '>=', $inicio)
+            ->whereDate('sgftrece.sgftrece_fecha', '<=', $fin);
+
+        if ($numero) {
+            $records->where('sgft.sgft_numero', 'like', "%$numero%");
+        }
+
+        if ($nombre_gafete) {
+            $records->where('empl.empl_nombre', 'like', "%$nombre_gafete%");
+        }
+
+        $records = $records->get();
+
+        $operaciones = [
+            'PENDIENTE' => 'SOLICITUD',
+            'ASIGNADO' => 'ASIGNACIÓN',
+            'DENEGADO' => 'DENEGACIÓN',
+            'AUTORIZADO' => 'AUTORIZACIÓN',
+            'CANCELADO' => 'CANCELACIÓN',
+            'DESACTIVADO' => 'DESACTIVACIÓN'
+        ];
+
+        if ($request->get('pdf') == 1) {
+
+            $report = new HistoricoPermisosEstacionamientoReport(null, true, false);
+
+            $view = 'pdf-reports.historico-permisos-estacionamiento';
+            $report->setView($view)
+                ->setRecords($records)
+                ->setOperaciones($operaciones)
+                ->setInicio($inicio)
+                ->setFin($fin);
+
+            return $report->exec();
+        }
+
+
+        $view = 'web.reportes.historico-permisos-estacionamiento';
+        $reporte = view($view, compact('records', 'inicio', 'fin', 'operaciones'))
+            ->render();
+
+        return response()->json($this->ajaxResponse(
+            true,
+            "Reporte generado exitosamente",
+            ['report' =>
+            $reporte]
+        ));
+    }
 
     public function gafetesDesactivados(Request $request)
     {

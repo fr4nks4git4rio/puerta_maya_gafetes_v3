@@ -181,7 +181,8 @@ class Local extends Model
             ->rightJoin('solicitudes_gafetes', 'sgft_id', '=', 'sgftre_sgft_id')
             ->where('sgftre_lcal_id', $this->lcal_id)
             ->where('sgftre_anio', $anio_impresion)
-            ->whereRaw("sgftre_permisos like '%AUTO%'");
+            ->whereRaw("sgftre_permisos like '%AUTO%'")
+            ->whereNull('sgftre_deleted_at');
         if ($para_solicitar)
             $query->whereIn('sgftre_estado', ['PENDIENTE', 'ASIGNADO', 'AUTORIZADO']);
         else
@@ -201,7 +202,8 @@ class Local extends Model
             ->rightJoin('solicitudes_gafetes', 'sgft_id', '=', 'sgftre_sgft_id')
             ->where('sgftre_lcal_id', $this->lcal_id)
             ->where('sgftre_anio', $anio_impresion)
-            ->whereRaw("sgftre_permisos like '%MOTO%'");
+            ->whereRaw("sgftre_permisos like '%MOTO%'")
+            ->whereNull('sgftre_deleted_at');
         if ($para_solicitar)
             $query->whereIn('sgftre_estado', ['PENDIENTE', 'ASIGNADO', 'AUTORIZADO']);
         else
