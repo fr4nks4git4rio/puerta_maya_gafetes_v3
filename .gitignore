@@ -16,6 +16,7 @@ yarn-error.log
 .zip
 
 cron.bat
+laravel-cron.bat
 cron.vbs
 
 # Ignore Mac DS_Store files
