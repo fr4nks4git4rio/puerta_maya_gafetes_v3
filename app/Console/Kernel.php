@@ -66,6 +66,8 @@ class Kernel extends ConsoleKernel
         //     }
         // })->everyFiveMinutes();
 
+        Log::info("Schedule ejecutado");
+
         $schedule->call(function () {
 
             //Otorgar en la controladora los permisos autorizados
