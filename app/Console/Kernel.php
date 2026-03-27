@@ -66,10 +66,8 @@ class Kernel extends ConsoleKernel
         //     }
         // })->everyFiveMinutes();
 
-        Log::info("Schedule ejecutado");
-
         $schedule->call(function () {
-
+            Log::info("Tarea programada 'AUTORIZAR SOLICITUDES' ejecutada");
             //Otorgar en la controladora los permisos autorizados
             $solicitudes = SolicitudGafeteReasignar::where('sgftre_estado', 'ASIGNADO')->get();
             foreach ($solicitudes as $solicitud) {
@@ -103,6 +101,7 @@ class Kernel extends ConsoleKernel
         })->between('00:00', '00:20');
 
         $schedule->call(function () {
+            Log::info("Tarea programada 'DESACTIVAR SOLICITUDES' ejecutada");
 
             //Quitar en la controladora los permisos autorizados y eliminar las solicitud de permisos para las solicitudes en estado CANCELADO
             $solicitudes = SolicitudGafeteReasignar::where('sgftre_estado', 'CANCELADO')->get();
