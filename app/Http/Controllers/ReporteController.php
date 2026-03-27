@@ -392,7 +392,7 @@ class ReporteController extends Controller
         ];
 
         $horas = [
-            '' => 'Toodas',
+            '' => 'Todas',
             '12 AM' => '12 AM',
             '1 AM' => '1 AM',
             '2 AM' => '2 AM',
