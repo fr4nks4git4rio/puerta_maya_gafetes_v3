@@ -17,8 +17,10 @@ use App\Reports\GafetesImpresosEstacionamientoReport;
 use App\Reports\SaldoLocalesReport;
 use App\SolicitudGafete;
 use App\GafeteEstacionamiento;
+use App\Puerta;
 use App\Reports\AjenosEnCasaReport;
 use App\Reports\GafetesDesactivadosReport;
+use App\Reports\GafetesImpresosReport;
 use App\Reports\HistoricoPermisosEstacionamientoReport;
 use App\Reports\PermisosTemporalesReport;
 use App\Reports\SolicitudesMantenimientoVigentesReport;
@@ -254,6 +256,7 @@ class ReporteController extends Controller
                     'locales' => true,
                     'tipos_gafete' => true,
                     'hora' => true,
+                    'puertas' => true,
 
                     'do_html' => true,
                     'do_pdf' => true,
@@ -439,6 +442,14 @@ class ReporteController extends Controller
             // 'estacionamiento' => 'ESTACIONAMIENTO',
         ];
 
+        $puertas = Puerta::selectRaw("
+        CONCAT(door_nombre, ' (', door_numero, ')') as label,
+        door_id
+        ")
+            ->get()
+            ->pluck('label', 'door_id')
+            ->put('', 'SELECCIONE UNA OPCIÓN');
+
         return view(
             'web.reportes.index',
             compact(
@@ -450,7 +461,8 @@ class ReporteController extends Controller
                 'estados_gipa',
                 'estados_cpago',
                 'razonsociales',
-                'horas'
+                'horas',
+                'puertas'
             )
         );
     }
@@ -595,7 +607,7 @@ class ReporteController extends Controller
 
         if ($request->get('pdf') == 1) {
 
-            $report = new GafetesImpresosAccesoReport(null, true, false);
+            $report = new GafetesImpresosReport(null, true, false);
             $report->setRecords($records);
             $report->setInicio($inicio);
             $report->setFin($fin);
@@ -853,6 +865,7 @@ class ReporteController extends Controller
         }
         $tipo = $request->get('tipo_gafete');
         $hora = $request->get('hora');
+        $puerta = $request->get('puerta');
 
 
         // $where_tipo = ($tipo == "") ? 'tipo IN ("planta","permiso")' : 'tipo = "' . $tipo . '"';
@@ -884,6 +897,10 @@ class ReporteController extends Controller
             // $hora_fin = ((int)$hora_inicio)+1;//str_replace(':00', ':59', $hora_inicio);
             // $hora_fin = $hora_fin < 10 ? ("0".$hora_fin):$hora_fin;
             $records->whereRaw("DATE_FORMAT(lgac_created_at, '%H') = ?", ["$hora_inicio"]);
+        }
+
+        if($puerta){
+            $records->where("door_id", $puerta);
         }
 
         $records = $records->get();

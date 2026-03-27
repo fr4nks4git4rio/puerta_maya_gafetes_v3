@@ -129,6 +129,13 @@
                             {!! Form::text('numero_rfid', null , ["class"=>"form-control",'id'=>'numero_rfid'])!!}
                         </div>
 
+                        <div class="col-sm-1 ctrl-puerta">
+                            <label for="puerta">Puerta</label>
+                        </div>
+                        <div class="col-sm-2 ctrl-puerta">
+                            {!! Form::select('puerta', $puertas, null , ["class"=>"form-control",'id'=>'puerta'])!!}
+                        </div>
+
                         <div class="col-sm-1 ctrl-hora">
                             <label for="estado">Hora</label>
                         </div>
@@ -137,7 +144,7 @@
                         </div>
 
                         <div class="col-sm-1 ctrl-tipo-gafete">
-                            <label for="estado">Tipo Gafete</label>
+                            <label for="tipo_gafete">Tipo Gafete</label>
                         </div>
                         <div class="col-sm-2 ctrl-tipo-gafete">
                             {!! Form::select('tipos_gafete', $tipos_gafete, null , ["class"=>"form-control",'id'=>'tipo_gafete'])!!}
@@ -268,6 +275,7 @@
                     $('.ctrl-numero-rfid').addClass('d-none');
                     $('.ctrl-tipo-gafete').addClass('d-none');
                     $('.ctrl-hora').addClass('d-none');
+                    $('.ctrl-puerta').addClass('d-none');
 
                     $('#btn-generar').addClass('d-none');
                     $('#btn-generar-pdf').addClass('d-none');
@@ -321,6 +329,10 @@
                         $('.ctrl-hora').removeClass('d-none');
                     }
 
+                    if (config.puertas == true) {
+                        $('.ctrl-puerta').removeClass('d-none');
+                    }
+
                     //---------------
                     if (config.do_html == true) {
                         $('#btn-generar').removeClass('d-none');
@@ -370,6 +382,7 @@
                     let tipo_gafete = $('#tipo_gafete').val();
                     let estado_cpago = $('#estado_cpago').val();
                     let hora = $('#hora').val();
+                    let puerta = $('#puerta').val();
 
 
                     if (url == "") {
@@ -403,6 +416,7 @@
                         'numero_rfid': numero_rfid,
                         'tipo_gafete': tipo_gafete,
                         'hora': hora,
+                        'puerta': puerta,
                         'pdf': pdf ? 1 : 0
                     };
 
