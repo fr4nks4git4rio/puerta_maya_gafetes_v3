@@ -42,6 +42,7 @@ class AsignarPermisos extends Command
     {
         VGafetesRfidV3::whereNotNull('puertas_numeros')
             ->whereYear('inicio', 2026)
+            ->whereNull('disabled_at')
             ->orderBy('empl_id')
             ->chunk(50, function ($gafetes) {
 
