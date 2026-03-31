@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\LogAcceso;
+use App\Puerta;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -197,11 +198,14 @@ class SeguridadController extends Controller
 
         try {
             $fecha = now();
+            $door = Puerta::find($puerta);
             LogAcceso::create([
                 'lgac_card_number' => $empleado->GafeteAcceso()->sgft_numero,
                 'lgac_empl_id' => $empleado->empl_id,
-                'lgac_tipo' => 'SALIDA',
-                'lgac_in_out_state' => 0,
+                'lgac_tipo' => $door->door_direccion,
+                'lgac_door_number' => $door->door_numero,
+                'lgac_door_id' => $puerta,
+                'lgac_in_out_state' => $door->door_direccion === 'ENTRADA',
                 'lgac_ctrl_id' => $empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id,
                 'lgac_source' => 'mobile_app',
                 'lgac_time' => $fecha->format('Y-m-d') . 'T' . $fecha->format('H:i:s') . 'Z'
@@ -209,7 +213,7 @@ class SeguridadController extends Controller
             $controllerService = new ControladoraAccesoService(Controladora::find($empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id));
             $data = [
                 'empleado' => $empleado,
-                'puertas_numeros' => implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray())
+                'puertas_numeros' => implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'SALIDA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray())
             ];
             $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
             if ($ubicacion) {
@@ -277,21 +281,20 @@ class SeguridadController extends Controller
 
         try {
             $fecha = now();
+            $door = Puerta::find($puerta);
             LogAcceso::create([
                 'lgac_card_number' => $empleado->GafeteAcceso()->sgft_numero,
                 'lgac_empl_id' => $empleado->empl_id,
-                'lgac_tipo' => 'SALIDA',
-                'lgac_in_out_state' => 0,
+                'lgac_tipo' => $door->door_direccion,
+                'lgac_door_number' => $door->door_numero,
+                'lgac_door_id' => $puerta,
+                'lgac_in_out_state' => $door->door_direccion === 'ENTRADA',
                 'lgac_ctrl_id' => $empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id,
                 'lgac_source' => 'mobile_app',
                 'lgac_time' => $fecha->format('Y-m-d') . 'T' . $fecha->format('H:i:s') . 'Z'
             ]);
             $controllerService = new ControladoraAccesoService(Controladora::find($empleado->GafeteAcceso()->getVGafeteRfidV3()->controladora_id));
-            // $ubicacion = $empleado->Ubicacion;
-            // if ($ubicacion->exists() && in_array($ubicacion->PuertaEntrada->door_tipo, ['AUTO', 'MOTO']))
-            //     $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_tipo', 'PEATONAL')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
-            // else
-            $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'SALIDA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
+            $numeros = implode(',', $empleado->GafeteAcceso()->Puertas()->where('door_direccion', 'ENTRADA')->where('door_modo', 'FISICA')->pluck('door_numero')->toArray());
             $data = [
                 'empleado' => $empleado,
                 'puertas_numeros' => $numeros
