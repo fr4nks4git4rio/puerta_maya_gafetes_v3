@@ -193,10 +193,12 @@ class SolicitudGafeteReasignarController extends Controller
             'gafetes_asignados_auto' => SolicitudGafeteReasignar::whereIn('sgftre_estado', ['ASIGNADO', 'AUTORIZADO'])
                 ->whereRaw("sgftre_anio = " . date('Y'))
                 ->whereRaw("sgftre_permisos like '%AUTO%'")
+                ->whereNull('sgftre_deleted_at')
                 ->count(),
             'gafetes_asignados_moto' => SolicitudGafeteReasignar::whereIn('sgftre_estado', ['ASIGNADO', 'AUTORIZADO'])
                 ->whereRaw("sgftre_anio = " . date('Y'))
                 ->whereRaw("sgftre_permisos like '%MOTO%'")
+                ->whereNull('sgftre_deleted_at')
                 ->count(),
         ];
 
