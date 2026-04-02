@@ -19,6 +19,7 @@ use App\SolicitudGafete;
 use App\GafeteEstacionamiento;
 use App\Puerta;
 use App\Reports\AjenosEnCasaReport;
+use App\Reports\AsignacionPermisosEstacionamientoReport;
 use App\Reports\GafetesDesactivadosReport;
 use App\Reports\GafetesImpresosReport;
 use App\Reports\HistoricoPermisosEstacionamientoReport;
@@ -166,6 +167,21 @@ class ReporteController extends Controller
                     'razonsociales' => false,
                     'nombre_gafete' => true,
                     'numero_rfid' => true,
+                    'do_html' => true,
+                    'do_pdf' => true,
+                    'do_xlsx' => false,
+                ],
+
+                [
+                    'key' => 'ASSIGN_PERM_EST',
+                    'url' => url('reportes/asignacion-permisos-estacionamiento'),
+                    'nombre' => 'Asignaciones de permisos de estacionamiento',
+                    'fechas' => false,
+                    'estados_ptmp' => false,
+                    'locales' => true,
+                    'razonsociales' => false,
+                    'nombre_gafete' => true,
+                    'numero_rfid' => false,
                     'do_html' => true,
                     'do_pdf' => true,
                     'do_xlsx' => false,
@@ -899,7 +915,7 @@ class ReporteController extends Controller
             $records->whereRaw("DATE_FORMAT(lgac_created_at, '%H') = ?", ["$hora_inicio"]);
         }
 
-        if($puerta){
+        if ($puerta) {
             $records->where("door_id", $puerta);
         }
 
@@ -1104,6 +1120,79 @@ class ReporteController extends Controller
 
         $view = 'web.reportes.historico-permisos-estacionamiento';
         $reporte = view($view, compact('records', 'inicio', 'fin', 'operaciones'))
+            ->render();
+
+        return response()->json($this->ajaxResponse(
+            true,
+            "Reporte generado exitosamente",
+            ['report' =>
+            $reporte]
+        ));
+    }
+
+    public function asignacionPermisosEstacionamiento(Request $request)
+    {
+
+        $local = $request->get('local');
+        $empleado = $request->get('nombre_gafete');
+        $anio_impresion_config = settings()->get('anio_impresion', date('Y'));
+
+        $totales_asignados = DB::table('solicitudes_gafetes as sgft')
+            ->select(
+                DB::raw("SUM(IF(INSTR(sgft_permisos, 'AUTO'),1,0)) as cantidad_autos"),
+                DB::raw("SUM(IF(INSTR(sgft_permisos, 'MOTO'),1,0)) as cantidad_motos")
+            )
+            ->whereYear('sgft.sgft_fecha', $anio_impresion_config)
+            ->whereNull('sgft.sgft_deleted_at')
+            ->whereNull('sgft.sgft_disabled_at')
+            ->whereNotNull('sgft.sgft_activated_at')
+            ->get()
+            ->first();
+
+        $records = DB::table('solicitudes_gafetes as sgft')
+            ->select(
+                'lcal.lcal_id as lcal_id',
+                'lcal.lcal_nombre_comercial as local',
+                'lcal.lcal_espacios_autos',
+                'lcal.lcal_espacios_motos',
+                'empl.empl_nombre as empleado',
+                DB::raw("IF(INSTR(sgft_permisos, 'AUTO'),1,0) as con_permisos_auto"),
+                DB::raw("IF(INSTR(sgft_permisos, 'MOTO'),1,0) as con_permisos_moto")
+            )
+            ->leftJoin('empleados as empl', 'empl.empl_id', '=', 'sgft.sgft_empl_id')
+            ->leftJoin('locales as lcal', 'lcal.lcal_id', '=', 'sgft.sgft_lcal_id')
+            ->whereYear('sgft.sgft_fecha', $anio_impresion_config)
+            ->whereNull('sgft.sgft_deleted_at')
+            ->whereNull('sgft.sgft_disabled_at')
+            ->whereNotNull('sgft.sgft_activated_at');
+
+        if ($local) {
+            $records->where('lcal.lcal_id', $local);
+        }
+
+        if ($empleado) {
+            $records->where('empl.empl_nombre', 'like', "%$empleado%");
+        }
+
+        $records = $records->get()->groupBy('local');
+        $local = $local ? Local::find($local)->lcal_nombre_comercial : '';
+        if ($request->get('pdf') == 1) {
+
+            $report = new AsignacionPermisosEstacionamientoReport(null, true, false);
+
+            $view = 'pdf-reports.asignacion-permisos-estacionamiento';
+            $report->setView($view)
+                ->setLocal($local)
+                ->setEmpleado($empleado)
+                ->setTotalesAsignados($totales_asignados)
+                ->setRecords($records);
+
+            return $report->exec();
+        }
+
+
+        $view = 'web.reportes.asignacion-permisos-estacionamiento';
+        $reporte = view($view, compact('records', 'local', 'empleado', 'totales_asignados'))
             ->render();
 
         return response()->json($this->ajaxResponse(

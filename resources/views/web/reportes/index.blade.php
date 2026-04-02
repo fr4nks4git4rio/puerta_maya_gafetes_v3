@@ -116,7 +116,7 @@
 
 
                         <div class="col-sm-1 ctrl-nombre-gafete">
-                            <label for="estado">Nombre Gafete</label>
+                            <label for="estado">Nombre Empleado</label>
                         </div>
                         <div class="col-sm-2 ctrl-nombre-gafete">
                             {!! Form::text('nombre_gafete', null , ["class"=>"form-control",'id'=>'nombre_gafete'])!!}

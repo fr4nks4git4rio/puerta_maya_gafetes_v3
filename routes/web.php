@@ -766,6 +766,7 @@ Route::group(['prefix' => '/reportes'], function () {
     Route::get('/gafetes-impresos-acceso', 'ReporteController@gafetesImpresosAcceso')->middleware(['role:RECEPCIÓN|LOCATARIO']);
     Route::get('/gafetes-impresos-estacionamiento', 'ReporteController@gafetesImpresosEstacionamiento')->middleware(['role:RECEPCIÓN']);
     Route::get('/historico-permisos-estacionamiento', 'ReporteController@historicoPermisosEstacionamiento')->middleware(['role:RECEPCIÓN']);
+    Route::get('/asignacion-permisos-estacionamiento', 'ReporteController@asignacionPermisosEstacionamiento')->middleware(['role:RECEPCIÓN']);
 
     Route::get('/accesos-vehicular', 'ReporteController@accesosVehicular')->middleware(['role:SEGURIDAD']);
     Route::get('/accesos-vehicular-6pm', 'ReporteController@accesosVehicular6pm')->middleware(['role:SEGURIDAD']);
