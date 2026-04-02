@@ -37,12 +37,18 @@
     </thead>
     <tbody>
         <?php
-        $count = 0;
+        $countAutos = 0;
+        $countMotos = 0;
         ?>
         @foreach ($records as $recordsLocal)
             @foreach ($recordsLocal as $index => $r)
                 <?php
-                $count++;
+                if ($r->con_permisos_auto) {
+                    $countAutos++;
+                }
+                if ($r->con_permisos_moto) {
+                    $countMotos++;
+                }
                 ?>
                 <tr style="page-break-inside:avoid">
                     @if ($index == 0)
@@ -54,15 +60,19 @@
                     @endif
                     <td>{{ $r->empleado }}</td>
                     <td class="text-center">{{ $r->con_permisos_auto ? 'X' : '' }}</td>
-                    <td class="text-center">{{ $r->con_permisos_auto ? 'X' : '' }}</td>
+                    <td class="text-center">{{ $r->con_permisos_moto ? 'X' : '' }}</td>
                 </tr>
             @endforeach
         @endforeach
     </tbody>
     <tfoot>
         <tr>
-            <th colspan="4"><b>TOTAL</b></th>
-            <th><b>{{ $count }}</b></th>
+            <th colspan="4"><b>TOTAL AUTOS</b></th>
+            <th><b>{{ $countAutos }}</b></th>
+        </tr>
+        <tr>
+            <th colspan="4"><b>TOTAL MOTOS</b></th>
+            <th><b>{{ $countMotos }}</b></th>
         </tr>
     </tfoot>
 
