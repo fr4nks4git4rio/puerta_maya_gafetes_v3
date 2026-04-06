@@ -75,4 +75,14 @@ class HomeController extends Controller
         $url_video = "https://www.youtube.com/embed/X38IkBEXjqI?start=$seconds&version=3&autoplay=1";
         return view('modal-video-tutorial', compact('url_video'));
     }
+
+    public function loadDataPersonalDentro()
+    {
+        return $this->ajaxResponse(true, '', [
+            'cantidad_motos_dentro' => cantidad_motos_dentro(),
+            'cantidad_autos_dentro' => cantidad_autos_dentro(),
+            'personas_dentro_de_plaza' => count(personas_dentro_de_plaza()),
+            'personas_dentro_de_plaza_puerta_maya' => count(personas_dentro_de_plaza_puerta_maya())
+        ]);
+    }
 }

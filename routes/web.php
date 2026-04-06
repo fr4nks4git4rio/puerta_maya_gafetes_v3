@@ -826,3 +826,4 @@ Route::group(['prefix' => '/profile'], function () {
 Route::get('/notificaciones', 'NotificationController@index')->name('notifications.index');
 Route::post('/check_all_notificaciones', 'NotificationController@markAsReadByUser')->name('notifications.check_all');
 Route::post('/check_some_notificaciones', 'NotificationController@markSomeAsReadByUser')->name('notifications.check_some');
+Route::get('/load-data-personal-dentro', 'HomeController@loadDataPersonalDentro')->name('seguridad.load-data-personal-dentro');

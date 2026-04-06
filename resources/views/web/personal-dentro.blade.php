@@ -15,7 +15,7 @@
                     </h2>
                 </div>
                 <div class="card-body text-center">
-                    <span class="fa-5x">{{ cantidad_motos_dentro() }}</span>
+                    <span class="fa-5x" id="cantidad_motos_dentro"></span>
                 </div>
             </div>
         </div>
@@ -28,7 +28,7 @@
                     </h2>
                 </div>
                 <div class="card-body text-center">
-                    <span class="fa-5x">{{ cantidad_autos_dentro() }}</span>
+                    <span class="fa-5x" id="cantidad_autos_dentro"></span>
                 </div>
             </div>
         </div>
@@ -41,7 +41,7 @@
                     </h2>
                 </div>
                 <div class="card-body text-center">
-                    <span class="fa-5x">{{ count(personas_dentro_de_plaza()) }}</span>
+                    <span class="fa-5x" id="personas_dentro_de_plaza"></span>
                 </div>
             </div>
         </div>
@@ -54,9 +54,39 @@
                     </h2>
                 </div>
                 <div class="card-body text-center">
-                    <span class="fa-5x">{{ count(personas_dentro_de_plaza_puerta_maya()) }}</span>
+                    <span class="fa-5x" id="personas_dentro_de_plaza_puerta_maya"></span>
                 </div>
             </div>
         </div>
     </div>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            loadData();
+        });
+
+        function loadData() {
+            $.ajax({
+                url: '{{ url('/load-data-personal-dentro') }}',
+                method: 'GET',
+                success: function(res) {
+                    if (res.success === true) {
+                        $('#cantidad_motos_dentro').html(res.data.cantidad_motos_dentro);
+                        $('#cantidad_autos_dentro').html(res.data.cantidad_autos_dentro);
+                        $('#personas_dentro_de_plaza').html(res.data.personas_dentro_de_plaza);
+                        $('#personas_dentro_de_plaza_puerta_maya').html(res.data
+                            .personas_dentro_de_plaza_puerta_maya);
+                    }
+                    setTimeout(() => {
+                        loadData();
+                    }, 3000);
+                },
+                error: function(err) {
+                    setTimeout(() => {
+                        loadData();
+                    }, 3000);
+                }
+            });
+        }
+    </script>
 @endsection
