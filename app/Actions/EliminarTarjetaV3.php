@@ -34,8 +34,13 @@ class EliminarTarjetaV3
     {
 
         try {
+            if (!$this->gafete->controladora_id) {
+                $this->gafete->getOriginalRecord()->setDisabledAt();
+                $this->gafete->getOriginalRecord()->delete();
+                return true;
+            }
             $controller = Controladora::find($this->gafete->controladora_id);
-            if(!$controller) return false;
+            if (!$controller) return false;
             $controllerService = new ControladoraAccesoService($controller);
             $data = [
                 'card' => $this->gafete->numero_rfid
@@ -45,6 +50,7 @@ class EliminarTarjetaV3
             if ($res['success'] == false) return false;
 
             $this->gafete->getOriginalRecord()->setDisabledAt();
+            $this->gafete->getOriginalRecord()->delete();
 
             return true;
         } catch (\Exception $e) {
