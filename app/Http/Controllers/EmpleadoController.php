@@ -29,6 +29,8 @@ use App\Empleado;
 use App\CatCargo;
 use App\Local;
 use App\VGafetesRfidV3;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\JoinClause;
 
 class EmpleadoController extends Controller
 {
@@ -138,7 +140,10 @@ class EmpleadoController extends Controller
                     'sgftre_estado'
                 ])
                     ->join('cat_cargos', 'empl_crgo_id', 'crgo_id')
-                    ->leftJoin('solicitudes_gafetes_reasignar', 'empl_id', '=', 'sgftre_empl_id')
+                    ->leftJoin('solicitudes_gafetes_reasignar', function(JoinClause $query){
+                        $query->on('empl_id', '=', 'sgftre_empl_id')
+                        ->whereNull('sgftre_deleted_at');
+                    })
                     // ->whereNull('sgftre_deleted_at')
                     ->whereEmplLcalId($local->lcal_id)
                     ->groupBy('empl_id')
