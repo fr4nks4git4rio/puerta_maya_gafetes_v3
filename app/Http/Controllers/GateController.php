@@ -86,8 +86,7 @@ class GateController extends Controller
         $filtros['perPageTarjeta'] = $request->perPageTarjeta ?? '';
         $filtros['search_logs_acceso'] = $request->search_logs_acceso ?? '';
 
-        $tarjetas = DB::table('v_gafetes_rfid_v3')
-            ->whereNotNull('puertas');
+        $tarjetas = DB::table('v_gafetes_rfid_v3');
         $path = "/gate-controller";
         if ($request->search_tarjeta) {
             $search_tarjeta = $request->search_tarjeta;
