@@ -110,22 +110,24 @@ class Kernel extends ConsoleKernel
                 try {
 
                     $gafete = $solicitud->Gafete;
-                    $gafeteRfid = $solicitud->Gafete->getVGafeteRfidV3();
+                    if ($gafete) {
+                        $gafeteRfid = $gafete->getVGafeteRfidV3();
 
 
-                    $gafete->Puertas()->detach($gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->pluck('door_id'));
+                        $gafete->Puertas()->detach($gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->pluck('door_id'));
 
-                    $gafete->sgft_permisos = 'PEATONAL';
-                    $gafete->save();
+                        $gafete->sgft_permisos = 'PEATONAL';
+                        $gafete->save();
 
 
-                    $controladora = Controladora::find($gafeteRfid->controladora_id);
+                        $controladora = Controladora::find($gafeteRfid->controladora_id);
 
-                    $activar = new ActivarTarjetaV3($gafeteRfid);
-                    $res = $activar->execute();
-                    if ($res == false) {
-                        DB::rollBack();
-                        Log::error("Ocurrió un error al cambiar los permisos de la tarjeta $gafeteRfid->numero_rfid en la controladora $controladora->ctrl_nombre.");
+                        $activar = new ActivarTarjetaV3($gafeteRfid);
+                        $res = $activar->execute();
+                        if ($res == false) {
+                            DB::rollBack();
+                            Log::error("Ocurrió un error al cambiar los permisos de la tarjeta $gafeteRfid->numero_rfid en la controladora $controladora->ctrl_nombre.");
+                        }
                     }
                     $solicitud->sgftre_estado = 'DESACTIVADO';
                     $solicitud->sgftre_fecha_desactivado = now();
