@@ -1356,7 +1356,7 @@ class SolicitudGafeteController extends Controller
                 $solicitud->save();
 
                 //TODO eliminar tarjeta anterior
-                if ($solicitud->Empleado->GafeteAcceso()) {
+                if ($solicitud->Empleado->GafeteAcceso() && $solicitud->Empleado->GafeteAcceso()->sgft_id != $solicitud->sgft_id) {
                     $gafete = $solicitud->Empleado->GafeteAcceso()->getVGafeteRfidV3();
                     if ($gafete && $gafete->controladora_id) {
                         $controladora = Controladora::find($gafete->controladora_id);
