@@ -13,6 +13,7 @@ use App\SolicitudGafete;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Jobs\ProcessHikvisionEvent;
 use App\LogAcceso;
 use App\Puerta;
 use Exception;
@@ -218,6 +219,7 @@ class SeguridadController extends Controller
             $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
             if ($ubicacion) {
                 DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->update([
+                    'emplub_lcal_id' => $empleado->empl_lcal_id,
                     'emplub_door_in_id' => $puerta,
                     'emplub_door_out_id' => null,
                     'emplub_ubicacion' => 1,
@@ -226,6 +228,7 @@ class SeguridadController extends Controller
             } else {
                 DB::table('empleados_ubicacion')->insert([
                     'emplub_empl_id' => $empleado->empl_id,
+                    'emplub_lcal_id' => $empleado->empl_lcal_id,
                     'emplub_door_in_id' => $puerta,
                     'emplub_door_out_id' => null,
                     'emplub_ubicacion' => 1,
@@ -302,6 +305,7 @@ class SeguridadController extends Controller
             $ubicacion = DB::table('empleados_ubicacion')->where('emplub_empl_id', $empleado->empl_id)->first();
             if ($ubicacion) {
                 DB::table('empleados_ubicacion')->where('emplub_empl_id', $ubicacion->emplub_empl_id)->update([
+                    'emplub_lcal_id' => $empleado->empl_lcal_id,
                     'emplub_door_out_id' => $puerta,
                     'emplub_ubicacion' => 0,
                     'emplub_fecha' => now()
@@ -309,6 +313,7 @@ class SeguridadController extends Controller
             } else {
                 DB::table('empleados_ubicacion')->insert([
                     'emplub_empl_id' => $empleado->empl_id,
+                    'emplub_lcal_id' => $empleado->empl_lcal_id,
                     'emplub_door_out_id' => $puerta,
                     'emplub_ubicacion' => 0,
                     'emplub_fecha' => now()
@@ -329,6 +334,12 @@ class SeguridadController extends Controller
     {
         $data = $request->input();
         if (isset($data['AccessControllerEvent']) && $data['AccessControllerEvent']['majorEventType'] == 5 && $data['AccessControllerEvent']['subEventType'] == 1) {
+
+            //TODO Recomendado: Procesar el evento haciendo uso de un Job. Para esto es necesario crear las respectivas tablas (jobs y failed_jobs) y utilizar un monitor de procesos (Supervisor)
+            // 2. Enviar a la cola (Esto es casi instantáneo)
+            // ProcessHikvisionEvent::dispatch($data);
+            //TODO FIN
+
             DB::beginTransaction();
             try {
                 $event = $data['AccessControllerEvent'];
@@ -428,6 +439,7 @@ class SeguridadController extends Controller
                             DB::table('empleados_ubicacion')
                                 ->where('emplub_empl_id', $empleado->empl_id)
                                 ->update([
+                                    'emplub_lcal_id' => $empleado->empl_lcal_id,
                                     'emplub_door_in_id' => $door->door_id,
                                     'emplub_door_out_id' => null,
                                     'emplub_ubicacion' => 1,
@@ -439,6 +451,7 @@ class SeguridadController extends Controller
                             DB::table('empleados_ubicacion')
                                 ->where('emplub_empl_id', $empleado->empl_id)
                                 ->update([
+                                    'emplub_lcal_id' => $empleado->empl_lcal_id,
                                     'emplub_door_out_id' => $door->door_id,
                                     'emplub_ubicacion' => 0,
                                     'emplub_fecha' => $logAcceso->lgac_created_at,
