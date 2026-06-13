@@ -20,6 +20,7 @@
         "laravel/tinker": "^1.0",
         "laraveles/spanish": "^1.2",
         "laravelista/ekko": "^3.0",
+        "league/oauth2-google": "^4.2",
         "maatwebsite/excel": "^3.1",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-activitylog": "^3.6",
