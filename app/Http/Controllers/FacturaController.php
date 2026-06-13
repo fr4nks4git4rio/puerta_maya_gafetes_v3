@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\NotificarFacturaTimbrada;
 use App\Clases\CFDI\CfdiConstructorV4;
 use App\ComprobantePago;
 use App\Exports\FacturasExport;
