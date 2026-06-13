@@ -26,6 +26,7 @@ use App\Controladora;
 use App\Empleado;
 use App\Factura;
 use App\Http\Controllers\ControladoraController;
+use App\Http\Controllers\GmailOAuthController;
 use App\Http\Controllers\PuertaController;
 use App\Http\Controllers\SettingsController;
 use App\Imports\DatosImport;
@@ -827,3 +828,5 @@ Route::get('/notificaciones', 'NotificationController@index')->name('notificatio
 Route::post('/check_all_notificaciones', 'NotificationController@markAsReadByUser')->name('notifications.check_all');
 Route::post('/check_some_notificaciones', 'NotificationController@markSomeAsReadByUser')->name('notifications.check_some');
 Route::get('/load-data-personal-dentro', 'HomeController@loadDataPersonalDentro')->name('seguridad.load-data-personal-dentro');
+Route::get('/oauth2/redirect', [GmailOAuthController::class, 'redirect']);
+Route::get('/oauth2/callback', [GmailOAuthController::class, 'callback']);

@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Clases\CFDI\CfdiConstructorV4;
 use App\ComprobantePago;
 use App\Exports\FacturasExport;
-use App\Mail\FacturaTimbrada;
 use App\MotivoCancelacionFactura;
 use App\Notifications\FacturaTimbrada as NotificacionFacturaTimbrada;
 use App\Reports\FormatoFacturaPDF;
 use App\Reports\FacturaListadoComprobantesPDF;
 use App\User;
+use File;
 use Illuminate\Http\Request;
 
 //Vendors
@@ -28,7 +28,8 @@ use App\Clases\CFDI\CfdiTimbrador;
 use App\Local;
 use App\Factura;
 use App\FacturaDetalle;
-
+use App\Jobs\SendEmailJob;
+use App\Jobs\SendFacturaJob;
 
 class FacturaController extends Controller
 {
@@ -1295,10 +1296,10 @@ class FacturaController extends Controller
                             ->whereUsrLcalId($factura->Comprobante->cpag_lcal_id)
                             ->get();
 
-                        $pdfData = $this->doFormatoPdf($factura);
+                        $notificador = new NotificarFacturaTimbrada($locatarios, $factura);
+                        $notificador->execute();
 
-                        \Notification::send($locatarios, new NotificacionFacturaTimbrada($factura, $pdfData));
-
+                        // \Notification::send($locatarios, new NotificacionFacturaTimbrada($factura, $pdfData));
                     } catch (\Exception $e) {
                         $response_message .= ' Error al notificar';
                         $response_data['notification_error'] = $e->getMessage();
@@ -1306,21 +1307,15 @@ class FacturaController extends Controller
                 }
 
                 return response()->json($this->ajaxResponse(true, $response_message, $response_data));
-
             } else {
 
                 $error = 'Error al timbrar: ' . $result['msg'];
                 return response()->json($this->ajaxResponse(false, $error));
-
             }
-
         } catch (\Exception $e) {
 
             return response()->json($this->ajaxResponse(false, $e->getMessage() . ' File:' . $e->getFile() . ' @' . $e->getLine()));
-
         }
-
-
     }
 
     public function doCancelar(Request $request)
@@ -1493,7 +1488,6 @@ class FacturaController extends Controller
         if (!$this->validateAction('do-send-mail')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
 
             try {
@@ -1504,19 +1498,19 @@ class FacturaController extends Controller
                     $user = new User();
                     $user->email = $this->data['email_to'];
                 }
-//                if ($user != null) {
 
-                set_time_limit(300);
-                $pdfData = $this->doFormatoPdf($factura);
-
-                Notification::send($user, new NotificacionFacturaTimbrada($factura, $pdfData, $this->data['subject'], explode(';', $this->data['email_to_others']), $this->data['body'], $request->files));
+                $notificador = new NotificarFacturaTimbrada($user, $factura, $this->data['subject'], $this->data['email_to_others'], $this->data['body'], $request->files);
+                $notificador->execute();
 
 
-                $files = glob(public_path() . "/tmp/*"); //obtenemos todos los nombres de los ficheros
-                foreach ($files as $file) {
-                    if (is_file($file))
-                        unlink($file); //elimino el fichero
-                }
+                // Notification::send($user, new NotificacionFacturaTimbrada($factura, $pdfData, $this->data['subject'], explode(';', $this->data['email_to_others']), $this->data['body'], $request->files));
+
+
+                // $files = glob(public_path() . "/tmp/*"); //obtenemos todos los nombres de los ficheros
+                // foreach ($files as $file) {
+                //     if (is_file($file))
+                //         unlink($file); //elimino el fichero
+                // }
 
                 return response()->json($this->ajaxResponse(true, 'Proceso exitoso.'));
 
@@ -1527,11 +1521,7 @@ class FacturaController extends Controller
             } catch (\Exception $e) {
                 return response()->json($this->ajaxResponse(false, $e->getMessage()));
             }
-
-
         }
-
-
     }
 
 
