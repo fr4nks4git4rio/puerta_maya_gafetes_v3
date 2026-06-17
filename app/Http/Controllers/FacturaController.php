@@ -1500,7 +1500,8 @@ class FacturaController extends Controller
                     $user->email = $this->data['email_to'];
                 }
 
-                $notificador = new NotificarFacturaTimbrada($user, $factura, $this->data['subject'], $this->data['email_to_others'], $this->data['body'], $request->files);
+                $others = $this->data['email_to_others'] ? explode(';', $this->data['email_to_others']) : null;
+                $notificador = new NotificarFacturaTimbrada($user, $factura, $this->data['subject'], $others, $this->data['body'], $request->files);
                 $notificador->execute();
 
 
