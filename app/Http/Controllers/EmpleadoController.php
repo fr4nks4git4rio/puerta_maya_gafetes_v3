@@ -126,7 +126,7 @@ class EmpleadoController extends Controller
 
         if ($request->ajax()) {
             $ultimoGafete = DB::table('solicitudes_gafetes as sgt')
-                ->select('sgt.sgft_empl_id', DB::raw('MAX(sgt.sgft_created_at) as max_created'))
+                ->select('sgt.sgft_empl_id', 'sgt.sgft_id', DB::raw('MAX(sgt.sgft_created_at) as max_created'))
                 ->whereNotNull('sgt.sgft_activated_at')
                 ->whereNull('sgt.sgft_disabled_at')
                 ->whereNull('sgt.sgft_deleted_at')
@@ -159,7 +159,7 @@ class EmpleadoController extends Controller
                     //     $query->on('empleados.empl_id', '=', 'solicitudes_gafetes_reasignar.sgftre_empl_id')
                     //         ->whereNull('solicitudes_gafetes_reasignar.sgftre_deleted_at');
                     // })
-                    ->leftJoin('solicitudes_gafetes_reasignar', 'sgt.sgft_id', 'sgftre_sgft_id')
+                    ->leftJoin('solicitudes_gafetes_reasignar', 'ug.sgft_id', 'sgftre_sgft_id')
                     ->whereEmplLcalId($local->lcal_id)
                     ->groupBy('empl_id')
                     ->orderBy('empl_nombre')
