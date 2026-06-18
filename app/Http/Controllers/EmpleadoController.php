@@ -127,7 +127,7 @@ class EmpleadoController extends Controller
         if ($request->ajax()) {
             $ultimoGafete = DB::table('solicitudes_gafetes as sgt')
                 ->select('sgt.sgft_empl_id', DB::raw('MAX(sgt.sgft_created_at) as max_created'))
-                ->where('sgt.sgft_activated_at', '!=', null)
+                ->whereNotNull('sgt.sgft_activated_at')
                 ->whereNull('sgt.sgft_disabled_at')
                 ->whereNull('sgt.sgft_deleted_at')
                 ->groupBy('sgt.sgft_empl_id');
@@ -146,20 +146,19 @@ class EmpleadoController extends Controller
                     'sgftre_permisos',
                     'sgftre_estado'
                 ])
-                    ->join('cat_cargos', 'empl_crgo_id', 'crgo_id')
-                    ->leftJoinSub($ultimoGafete, 'ug', 'ug.sgft_empl_id', '=', 'empl_id')
+                    ->join('cat_cargos', 'empleados.empl_crgo_id', '=', 'crgo_id')
+                    ->leftJoinSub($ultimoGafete, 'ug', 'ug.sgft_empl_id', '=', 'empleados.empl_id')
                     ->leftJoin('solicitudes_gafetes', function ($join) {
-                        $join->on('empl_id', 'sgft_empl_id')
-                            ->on('sgft_created_at', '=', 'ug.max_created')
-                            ->where('sgft_activated_at', '!=', null)
-                            ->whereNull('sgft_disabled_at')
-                            ->whereNull('sgft_deleted_at');
+                        $join->on('empleados.empl_id', '=', 'solicitudes_gafetes.sgft_empl_id')
+                            ->on('solicitudes_gafetes.sgft_created_at', '=', 'ug.max_created')
+                            ->whereNotNull('solicitudes_gafetes.sgft_activated_at')
+                            ->whereNull('solicitudes_gafetes.sgft_disabled_at')
+                            ->whereNull('solicitudes_gafetes.sgft_deleted_at');
                     })
                     ->leftJoin('solicitudes_gafetes_reasignar', function (JoinClause $query) {
-                        $query->on('empl_id', '=', 'sgftre_empl_id')
-                            ->whereNull('sgftre_deleted_at');
+                        $query->on('empleados.empl_id', '=', 'solicitudes_gafetes_reasignar.sgftre_empl_id')
+                            ->whereNull('solicitudes_gafetes_reasignar.sgftre_deleted_at');
                     })
-                    // ->whereNull('sgftre_deleted_at')
                     ->whereEmplLcalId($local->lcal_id)
                     ->groupBy('empl_id')
                     ->orderBy('empl_nombre')
