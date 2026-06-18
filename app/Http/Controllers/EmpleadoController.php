@@ -148,8 +148,8 @@ class EmpleadoController extends Controller
                     ->leftJoin('solicitudes_gafetes', 'sgft_id', 'vgafetes.ref_id')
                     ->leftJoin('solicitudes_gafetes_reasignar', 'sgft_id', 'sgftre_sgft_id')
                     ->whereEmplLcalId($local->lcal_id)
-                    ->groupBy('empl_id')
-                    ->orderBy('empl_nombre')
+                    ->groupBy('empleados.empl_id')
+                    ->orderBy('empleados.empl_nombre')
             )
                 ->editColumn('empl_thumb', function (Empleado $model) {
                     return '<img class=" mx-auto d-block img-fluid" src="' . $model->empl_thumb_web . '" style="max-height:35px" />';
