@@ -145,7 +145,7 @@ class EmpleadoController extends Controller
                             ->whereNotNull('vgafetes.activated_at')
                             ->whereNull('vgafetes.disabled_at');
                     })
-                    ->leftJoin('solcitudes_gafetes', 'sgft_id', 'vgafetes.ref_id')
+                    ->leftJoin('solicitudes_gafetes', 'sgft_id', 'vgafetes.ref_id')
                     ->leftJoin('solicitudes_gafetes_reasignar', 'sgft_id', 'sgftre_sgft_id')
                     ->whereEmplLcalId($local->lcal_id)
                     ->groupBy('empl_id')
