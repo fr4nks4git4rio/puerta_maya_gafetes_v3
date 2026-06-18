@@ -148,17 +148,18 @@ class EmpleadoController extends Controller
                 ])
                     ->join('cat_cargos', 'empleados.empl_crgo_id', '=', 'crgo_id')
                     ->leftJoinSub($ultimoGafete, 'ug', 'ug.sgft_empl_id', '=', 'empleados.empl_id')
-                    ->leftJoin('solicitudes_gafetes', function ($join) {
-                        $join->on('empleados.empl_id', '=', 'solicitudes_gafetes.sgft_empl_id')
-                            ->on('solicitudes_gafetes.sgft_created_at', '=', 'ug.max_created')
-                            ->whereNotNull('solicitudes_gafetes.sgft_activated_at')
-                            ->whereNull('solicitudes_gafetes.sgft_disabled_at')
-                            ->whereNull('solicitudes_gafetes.sgft_deleted_at');
-                    })
-                    ->leftJoin('solicitudes_gafetes_reasignar', function (JoinClause $query) {
-                        $query->on('empleados.empl_id', '=', 'solicitudes_gafetes_reasignar.sgftre_empl_id')
-                            ->whereNull('solicitudes_gafetes_reasignar.sgftre_deleted_at');
-                    })
+                    // ->leftJoin('solicitudes_gafetes', function ($join) {
+                    //     $join->on('empleados.empl_id', '=', 'solicitudes_gafetes.sgft_empl_id')
+                    //         ->on('solicitudes_gafetes.sgft_created_at', '=', 'ug.max_created')
+                    //         ->whereNotNull('solicitudes_gafetes.sgft_activated_at')
+                    //         ->whereNull('solicitudes_gafetes.sgft_disabled_at')
+                    //         ->whereNull('solicitudes_gafetes.sgft_deleted_at');
+                    // })
+                    // ->leftJoin('solicitudes_gafetes_reasignar', function (JoinClause $query) {
+                    //     $query->on('empleados.empl_id', '=', 'solicitudes_gafetes_reasignar.sgftre_empl_id')
+                    //         ->whereNull('solicitudes_gafetes_reasignar.sgftre_deleted_at');
+                    // })
+                    ->leftJoin('solicitudes_gafetes_reasignar', 'sgt.sgft_id', 'sgftre_sgft_id')
                     ->whereEmplLcalId($local->lcal_id)
                     ->groupBy('empl_id')
                     ->orderBy('empl_nombre')
