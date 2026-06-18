@@ -125,6 +125,13 @@ class EmpleadoController extends Controller
 
 
         if ($request->ajax()) {
+            $ultimoGafete = DB::table('solicitudes_gafetes')
+                ->select('sgft_empl_id', DB::raw('MAX(sgft_created_at) as max_created'))
+                ->where('sgft_activated_at', '!=', null)
+                ->whereNull('sgft_disabled_at')
+                ->whereNull('sgft_deleted_at')
+                ->groupBy('sgft_empl_id');
+
             return Datatables::of(
                 Empleado::select([
                     'empl_id',
@@ -140,9 +147,17 @@ class EmpleadoController extends Controller
                     'sgftre_estado'
                 ])
                     ->join('cat_cargos', 'empl_crgo_id', 'crgo_id')
-                    ->leftJoin('solicitudes_gafetes_reasignar', function(JoinClause $query){
+                    ->leftJoinSub($ultimoGafete, 'ug', 'ug.sgft_empl_id', '=', 'empl_id')
+                    ->leftJoin('solicitudes_gafetes', function ($join) {
+                        $join->on('empl_id', 'sgft_empl_id')
+                            ->on('sgft_created_at', '=', 'ug.max_created')
+                            ->where('sgft_activated_at', '!=', null)
+                            ->whereNull('sgft_disabled_at')
+                            ->whereNull('sgft_deleted_at');
+                    })
+                    ->leftJoin('solicitudes_gafetes_reasignar', function (JoinClause $query) {
                         $query->on('empl_id', '=', 'sgftre_empl_id')
-                        ->whereNull('sgftre_deleted_at');
+                            ->whereNull('sgftre_deleted_at');
                     })
                     // ->whereNull('sgftre_deleted_at')
                     ->whereEmplLcalId($local->lcal_id)
