@@ -125,17 +125,6 @@ class EmpleadoController extends Controller
 
 
         if ($request->ajax()) {
-            $ultimoGafete = DB::table('solicitudes_gafetes as sgt')
-                ->select(
-                    'sgt.sgft_empl_id',
-                    DB::raw('MAX(sgt.sgft_id) as sgft_id'),
-                    DB::raw('MAX(sgt.sgft_created_at) as max_created')
-                )
-                ->whereNotNull('sgt.sgft_activated_at')
-                ->whereNull('sgt.sgft_disabled_at')
-                ->whereNull('sgt.sgft_deleted_at')
-                ->groupBy('sgt.sgft_empl_id');
-
             return Datatables::of(
                 Empleado::select([
                     'empl_id',
