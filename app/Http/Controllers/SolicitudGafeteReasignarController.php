@@ -119,7 +119,7 @@ class SolicitudGafeteReasignarController extends Controller
                     return $model->Empleado->empl_nombre;
                 })
                 ->editColumn('sgft_numero', function (SolicitudGafeteReasignar $model) {
-                    return $model->Gafete->sgft_numero;
+                    return optional($model->Gafete)->sgft_numero;
                 })
                 ->editColumn('sgftre_permisos', function (SolicitudGafeteReasignar $model) {
                     return Str::replaceLast(',', ' y ', str_replace(['PEATONAL,', 'PEATONAL'], '', $model->sgftre_permisos));
