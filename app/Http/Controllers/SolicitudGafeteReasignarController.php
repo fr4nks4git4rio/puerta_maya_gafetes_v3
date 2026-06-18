@@ -108,7 +108,7 @@ class SolicitudGafeteReasignarController extends Controller
                     DB::raw("IF(sgftre_estado = 'DENEGADO', sgftre_comentarios_rechazo, sgft_comentario) as sgft_comentario")
                 ])
                     ->leftJoin('locales', 'lcal_id', '=', 'sgftre_lcal_id')
-                    ->leftJoin('solicitudes_gafetes', 'sgft_id', '=', 'sgftre_sgft_id')
+                    ->join('solicitudes_gafetes', 'sgft_id', '=', 'sgftre_sgft_id')
                     ->where('sgftre_estado', 'PENDIENTE')
                     ->orWhereRaw("GREATEST(IFNULL(DATE(sgftre_fecha_asignado), '1000-01-01'), IFNULL(DATE(sgftre_fecha_denegado), '1000-01-01'), IFNULL(DATE(sgftre_fecha_autorizado), '1000-01-01')) = ?", [today()->format('Y-m-d')])
             )
