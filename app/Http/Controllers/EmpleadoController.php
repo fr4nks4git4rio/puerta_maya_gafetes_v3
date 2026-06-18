@@ -135,7 +135,7 @@ class EmpleadoController extends Controller
                     'empleados.empl_vacunado',
                     'crgo_descripcion',
                     'empleados.empl_thumb',
-                    'solicitudes_gafetes.sgftre_id',
+                    'solicitudes_gafetes_reasignar.sgftre_id',
                     'sgftre_permisos',
                     'sgftre_estado'
                 ])
