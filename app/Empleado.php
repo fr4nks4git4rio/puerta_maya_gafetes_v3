@@ -71,7 +71,6 @@ class Empleado extends Model
         } else {
             return asset('storage/empleados/default_sm.jpg');
         }
-
     }
 
 
@@ -110,7 +109,9 @@ class Empleado extends Model
 
     public function GafeteReasignado()
     {
-        return $this->hasOne('App\SolicitudGafeteReasignar', 'sgftre_empl_id');
+        return $this->hasOne('App\SolicitudGafeteReasignar', 'sgftre_empl_id')
+            ->whereNull('sgftre_deleted_at')
+            ->where('sgftre_sgft_id', $this->GafeteAcceso()->sgft_id);
     }
 
     public function GafetesAcceso()
@@ -127,5 +128,4 @@ class Empleado extends Model
             ->orderBy('sgft_created_at', 'desc')
             ->first();
     }
-
 }
