@@ -127,15 +127,15 @@ class EmpleadoController extends Controller
         if ($request->ajax()) {
             return Datatables::of(
                 Empleado::select([
-                    'empl_id',
-                    'empl_nombre',
-                    'empl_crgo_id',
-                    'empl_email',
-                    'empl_telefono',
-                    'empl_vacunado',
+                    'empleados.empl_id',
+                    'empleados.empl_nombre',
+                    'empleados.empl_crgo_id',
+                    'empleados.empl_email',
+                    'empleados.empl_telefono',
+                    'empleados.empl_vacunado',
                     'crgo_descripcion',
-                    'empl_thumb',
-                    'sgftre_id',
+                    'empleados.empl_thumb',
+                    'solicitudes_gafetes.sgftre_id',
                     'sgftre_permisos',
                     'sgftre_estado'
                 ])
