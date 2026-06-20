@@ -27,13 +27,15 @@ class ActivarTarjetaV3
 
     public function execute(): bool
     {
+        $controller = Controladora::find($this->gafete->controladora_id);
+        if (!$controller) return false;
+        $controllerService = new ControladoraAccesoService($controller);
+        $empleado = Empleado::find($this->gafete->empl_id);
+
+        if (!$empleado)
+            return false;
 
         try {
-            $controller = Controladora::find($this->gafete->controladora_id);
-            if (!$controller) return false;
-            $controllerService = new ControladoraAccesoService($controller);
-            $empleado = Empleado::find($this->gafete->empl_id);
-
             $dataEmpleado = [
                 'empleado' => $empleado,
                 'puertas_numeros' => $this->gafete->puertas_numeros
