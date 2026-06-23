@@ -80,7 +80,7 @@ class EmpleadoController extends Controller
         'empl_comentario' => 'Comentario',
         'empl_vacunado' => 'Vacunado',
         'empl_vacuna_validada' => 'Vacuna Validada',
-        'empl_cert_vacuna' => 'Certificado',
+        'empl_cert_vacuna' => 'Identificación oficial',
         'data_photo' => 'Fotografía'
     ];
 
@@ -344,8 +344,8 @@ class EmpleadoController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
 
-            if ($this->data['empl_vacunado'] && !$request->hasFile('empl_cert_vacuna')) {
-                return response()->json($this->ajaxResponse(false, 'Debe subir el Certificado de Vacunación!'));
+            if (!$request->hasFile('empl_cert_vacuna')) {
+                return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
             }
 
             //            dd($this->data);
@@ -398,8 +398,8 @@ class EmpleadoController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
 
-            if ($this->data['empl_vacunado'] && (!$empleado->empl_cert_vacuna && !$request->hasFile('empl_cert_vacuna'))) {
-                return response()->json($this->ajaxResponse(false, 'Debe subir el Certificado de Vacunación!'));
+            if (!$request->hasFile('empl_cert_vacuna')) {
+                return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
             }
 
             DB::beginTransaction();
@@ -410,7 +410,6 @@ class EmpleadoController extends Controller
                 }
 
                 $data = Arr::except($this->data, ['data_photo', 'empl_cert_vacuna']);
-                if ($request->empl_vacunado) {
                     if ($request->hasFile('empl_cert_vacuna')) {
                         if ($empleado->empl_cert_vacuna && Storage::disk('certificados_vacunacion')->exists($empleado->empl_cert_vacuna)) {
                             Storage::disk('certificados_vacunacion')->delete($empleado->empl_cert_vacuna);
@@ -418,9 +417,6 @@ class EmpleadoController extends Controller
                         $data['empl_cert_vacuna'] = $request->file('empl_cert_vacuna')
                             ->storeAs('', $empleado->getKey() . "_Empleado." . $request->file('empl_cert_vacuna')->extension(), 'certificados_vacunacion');
                     }
-                } else {
-                    $data['empl_cert_vacuna'] = null;
-                }
                 $empleado->update($data);
 
                 // ----------------
@@ -437,51 +433,6 @@ class EmpleadoController extends Controller
                         $empleado->empl_foto = $fileFoto;
                         $empleado->empl_thumb = $fileThumb;
                         $empleado->save();
-                    }
-                }
-
-                if ($empleado->GafeteAcceso()) {
-                    //                    $controller = Controladora::controladoraAccesoPeatonal();
-                    if ($empleado->GafeteAcceso()->is_active && ($empleado->empl_vacunado == 0 || $empleado->empl_vacuna_validada == 0)) {
-                        foreach ($empleado->GafeteAcceso()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
-                            $pin_value = 0;
-
-                            foreach ($doors as $door) {
-                                $pin_value += $door->pin_value;
-                            }
-
-                            $controller = Controladora::findOrFail($key);
-
-                            // desactivamos tarjeta v2
-                            $gafeteRfid = $empleado->GafeteAcceso()->getVGafeteRfidV2();
-                            $activar = new DesactivarTarjetaV2($gafeteRfid, $controller, $pin_value);
-                            $res = $activar->execute();
-
-                            if ($res == false) {
-                                \DB::rollBack();
-                                return response()->json($this->ajaxResponse(false, "Ocurrió un error al desactivar la tarjeta en la controladora $controller->ctrl_nombre.", $res));
-                            }
-                        }
-                    } elseif ($empleado->GafeteAcceso()->is_disabled && ($empleado->empl_vacunado == 1 && $empleado->empl_vacuna_validada == 1)) {
-                        foreach ($empleado->GafeteAcceso()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
-                            $pin_value = 0;
-
-                            foreach ($doors as $door) {
-                                $pin_value += $door->pin_value;
-                            }
-
-                            $controller = Controladora::findOrFail($key);
-
-                            // activamos tarjeta v2
-                            $gafeteRfid = $empleado->GafeteAcceso()->getVGafeteRfidV2();
-                            $activar = new ActivarTarjetaV2($gafeteRfid, $controller, $pin_value);
-                            $res = $activar->execute();
-
-                            if ($res == false) {
-                                \DB::rollBack();
-                                return response()->json($this->ajaxResponse(false, "Ocurrió un error al activar la tarjeta en la controladora $controller->ctrl_nombre.", $res));
-                            }
-                        }
                     }
                 }
                 // ----------------
@@ -502,8 +453,8 @@ class EmpleadoController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
 
-            if ($this->data['empl_vacunado'] && !$request->hasFile('empl_cert_vacuna')) {
-                return response()->json($this->ajaxResponse(false, 'Debe subir el Certificado de Vacunación!'));
+            if (!$request->hasFile('empl_cert_vacuna')) {
+                return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
             }
 
             DB::beginTransaction();
@@ -552,8 +503,8 @@ class EmpleadoController extends Controller
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
-            if ($this->data['empl_vacunado'] && (!$empleado->empl_cert_vacuna && !$request->hasFile('empl_cert_vacuna'))) {
-                return response()->json($this->ajaxResponse(false, 'Debe subir el Certificado de Vacunación!'));
+            if (!$request->hasFile('empl_cert_vacuna')) {
+                return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
             }
             DB::beginTransaction();
 
@@ -563,7 +514,6 @@ class EmpleadoController extends Controller
                 }
 
                 $data = Arr::except($this->data, ['data_photo', 'empl_cert_vacuna']);
-                if ($request->empl_vacunado) {
                     if ($request->hasFile('empl_cert_vacuna')) {
                         if ($empleado->empl_cert_vacuna && Storage::disk('certificados_vacunacion')->exists($empleado->empl_cert_vacuna)) {
                             Storage::disk('certificados_vacunacion')->delete($empleado->empl_cert_vacuna);
@@ -571,9 +521,6 @@ class EmpleadoController extends Controller
                         $data['empl_cert_vacuna'] = $request->file('empl_cert_vacuna')
                             ->storeAs('', $empleado->getKey() . "_Empleado." . $request->file('empl_cert_vacuna')->extension(), 'certificados_vacunacion');
                     }
-                } else {
-                    $data['empl_cert_vacuna'] = null;
-                }
                 $empleado->update($data);
 
                 // ----------------
@@ -590,51 +537,6 @@ class EmpleadoController extends Controller
                         $empleado->empl_foto = $fileFoto;
                         $empleado->empl_thumb = $fileThumb;
                         $empleado->save();
-                    }
-                }
-
-                if ($empleado->GafeteAcceso()) {
-                    //                    $controller = Controladora::controladoraAccesoPeatonal();
-                    if ($empleado->GafeteAcceso()->is_active && ($empleado->empl_vacunado == 0 || $empleado->empl_vacuna_validada == 0)) {
-                        foreach ($empleado->GafeteAcceso()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
-                            $pin_value = 0;
-
-                            foreach ($doors as $door) {
-                                $pin_value += $door->pin_value;
-                            }
-
-                            $controller = Controladora::findOrFail($key);
-
-                            // desactivamos tarjeta v2
-                            $gafeteRfid = $empleado->GafeteAcceso()->getVGafeteRfidV2();
-                            $activar = new DesactivarTarjetaV2($gafeteRfid, $controller, $pin_value);
-                            $res = $activar->execute();
-
-                            if ($res == false) {
-                                \DB::rollBack();
-                                return response()->json($this->ajaxResponse(false, "Ocurrió un error al desactivar la tarjeta en la controladora $controller->ctrl_nombre.", $res));
-                            }
-                        }
-                    } elseif ($empleado->GafeteAcceso()->is_disabled && ($empleado->empl_vacunado == 1 && $empleado->empl_vacuna_validada == 1)) {
-                        foreach ($empleado->GafeteAcceso()->Puertas->groupBy('door_controladora_id') as $key => $doors) {
-                            $pin_value = 0;
-
-                            foreach ($doors as $door) {
-                                $pin_value += $door->pin_value;
-                            }
-
-                            $controller = Controladora::findOrFail($key);
-
-                            // activamos tarjeta v2
-                            $gafeteRfid = $empleado->GafeteAcceso()->getVGafeteRfidV2();
-                            $activar = new ActivarTarjetaV2($gafeteRfid, $controller, $pin_value);
-                            $res = $activar->execute();
-
-                            if ($res == false) {
-                                \DB::rollBack();
-                                return response()->json($this->ajaxResponse(false, "Ocurrió un error al activar la tarjeta en la controladora $controller->ctrl_nombre.", $res));
-                            }
-                        }
                     }
                 }
                 // ----------------

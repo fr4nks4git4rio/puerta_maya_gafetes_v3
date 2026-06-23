@@ -62,7 +62,7 @@ class Empleado extends Model
     public function getEmplThumbWebAttribute()
     {
         $thumb = $this->empl_thumb;
-//        $path = storage_path() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'empleados';
+        //        $path = storage_path() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'empleados';
         $path = public_path('storage') . DIRECTORY_SEPARATOR . 'empleados';
         $file = $path . DIRECTORY_SEPARATOR . $thumb;
 
@@ -77,7 +77,7 @@ class Empleado extends Model
     public function getEmplFotoWebAttribute()
     {
         $foto = $this->empl_foto;
-//        $path = storage_path() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'empleados';
+        //        $path = storage_path() . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'empleados';
         $path = public_path('storage') . DIRECTORY_SEPARATOR . 'empleados';
         $file = $path . DIRECTORY_SEPARATOR . $foto;
 
@@ -111,7 +111,7 @@ class Empleado extends Model
     {
         return $this->hasOne('App\SolicitudGafeteReasignar', 'sgftre_empl_id')
             ->whereNull('sgftre_deleted_at')
-            ->where('sgftre_sgft_id', $this->GafeteAcceso()->sgft_id);
+            ->where('sgftre_sgft_id', optional($this->GafeteAcceso())->sgft_id);
     }
 
     public function GafetesAcceso()

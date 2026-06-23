@@ -156,31 +156,6 @@
                     width: '100%'
                 });
 
-                document.getElementById('empl_vacunado').addEventListener('click', function (event) {
-                    if (this.checked) {
-                        if (document.getElementById('empl_cert_vacuna'))
-                            document.getElementById('empl_cert_vacuna').removeAttribute('disabled');
-                    } else {
-                        if (document.getElementById('empl_cert_vacuna')) {
-                            document.getElementById('empl_cert_vacuna').setAttribute('disabled', true);
-                            document.getElementById('empl_cert_vacuna').value = '';
-                        }
-                        if (document.getElementById('frame_certificado')) {
-                            document.getElementById('frame_certificado').remove();
-                            document.getElementById('zoom_frame').remove();
-                            $('#contenedor_certificado').append('<a class="btn btn-primary file-btn w-100">' +
-                                '<input type="file" name="empl_cert_vacuna" id="empl_cert_vacuna" accept="image/jpeg,image/png,application/pdf" disabled>' +
-                                '</a>');
-                        }
-                        document.getElementById('empl_vacuna_validada').checked = false;
-                    }
-                });
-
-                if (document.getElementById('empl_vacunado').checked) {
-                    if (document.getElementById('empl_cert_vacuna'))
-                        document.getElementById('empl_cert_vacuna').removeAttribute('disabled');
-                }
-
 //                $('#empl_vacunado').on('click', );
                 if (document.getElementById('empl_vacuna_validada'))
                     document.getElementById('empl_vacuna_validada').addEventListener('click', function (event) {
