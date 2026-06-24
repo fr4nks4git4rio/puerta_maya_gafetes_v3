@@ -135,24 +135,20 @@ class EmpleadoController extends Controller
                     'empleados.empl_vacunado',
                     'crgo_descripcion',
                     'empleados.empl_thumb',
-                    'solicitudes_gafetes_reasignar.sgftre_id',
-                    'sgftre_permisos',
-                    'sgftre_estado'
+                    DB::raw("'' as sgftre_id"),
+                    DB::raw("'' as sgftre_permisos")
                 ])
                     ->join('cat_cargos', 'empleados.empl_crgo_id', '=', 'crgo_id')
-                    ->leftJoin('v_gafetes_rfid_v3 as vgafetes', function ($join) {
-                        $join->on('empleados.empl_id', '=', 'vgafetes.empl_id')
-                            ->whereNotNull('vgafetes.activated_at')
-                            ->whereNull('vgafetes.disabled_at');
-                    })
-                    ->leftJoin('solicitudes_gafetes', 'sgft_id', 'vgafetes.ref_id')
-                    ->leftJoin('solicitudes_gafetes_reasignar', 'sgft_id', 'sgftre_sgft_id')
                     ->whereEmplLcalId($local->lcal_id)
                     ->groupBy('empleados.empl_id')
                     ->orderBy('empleados.empl_nombre')
             )
                 ->editColumn('empl_thumb', function (Empleado $model) {
                     return '<img class=" mx-auto d-block img-fluid" src="' . $model->empl_thumb_web . '" style="max-height:35px" />';
+                })
+                ->editColumn('sgftre_id', function (Empleado $model) {
+                    if (!$model->GafeteReasignado) return '';
+                    return $model->GafeteReasignado->sgftre_id;
                 })
                 ->editColumn('sgftre_permisos', function (Empleado $model) {
                     if (!$model->GafeteReasignado) return '';
