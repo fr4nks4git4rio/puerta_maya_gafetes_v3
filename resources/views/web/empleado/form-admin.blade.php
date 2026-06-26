@@ -75,22 +75,23 @@
             @endif
 
             <div class="row form-group">
-                {!! Form::label('empl_cert_vacuna', 'Certificado (2mb máx.)' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('empl_cert_vacuna', 'Identificación oficial (2mb máx.)' , ['class' => 'col-sm-4 control-label']); !!}
                 <div class="col-sm-8" id="contenedor_certificado">
+                    <a class="btn btn-primary file-btn w-100">
+                        {!! Form::file('empl_cert_vacuna', ['accept' => 'image/jpeg,image/png,application/pdf']) !!}
+                    </a>
                     @if(isset($empleado) && $empleado->empl_cert_vacuna)
+                    <div class="position-relative">
                         <a href="javascript:void;" class="btn btn-primary btn-xs position-absolute"
-                           style="left: 20px; top: 10px" id="zoom_frame"
+                                style="left: 10px; top: 10px" id="zoom_frame"
                            onclick="document.getElementById('frame_certificado').requestFullscreen()"><i
                                     class="fa fa-search-plus"></i></a>
-                        <iframe width="300" height="200" allow="fullscreen" id="frame_certificado"
-                                src="/certificados_vacunacion/{{$empleado->empl_cert_vacuna}}?{{now()}}">
+                            <iframe height="200" allow="fullscreen" id="frame_certificado" style="width: stretch"
+                                src="/certificados_vacunacion/{{ $empleado->empl_cert_vacuna }}?{{ now() }}">
                         </iframe>
-                        {{--<img src="/certificados_vacunacion/{{$empleado->empl_cert_vacuna}}"--}}
-                        {{--alt="" class="img-fluid" id="img_cert_vacuna">--}}
-                    @else
-                        <a class="btn btn-primary file-btn w-100">
-                            {!! Form::file('empl_cert_vacuna',["accept"=>"image/jpeg,image/png,application/pdf", 'disabled' => true]) !!}
-                        </a>
+                            {{-- <img src="/certificados_vacunacion/{{$empleado->empl_cert_vacuna}}" --}}
+                            {{-- alt="" class="img-fluid" id="img_cert_vacuna"> --}}
+                        </div>
                     @endif
                 </div>
             </div>
