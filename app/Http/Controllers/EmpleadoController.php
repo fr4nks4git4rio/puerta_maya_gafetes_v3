@@ -172,10 +172,10 @@ class EmpleadoController extends Controller
                     $sql = "crgo_descripcion  like ?";
                     $query->whereRaw($sql, ["%{$keyword}%"]);
                 })
-                ->filterColumn('sgftre_permisos', function ($query, $keyword) {
-                    $sql = "sgftre_permisos  like ?";
-                    $query->whereRaw($sql, ["%{$keyword}%"]);
-                })
+                // ->filterColumn('sgftre_permisos', function ($query, $keyword) {
+                //     $sql = "sgftre_permisos  like ?";
+                //     $query->whereRaw($sql, ["%{$keyword}%"]);
+                // })
                 ->rawColumns(['empl_thumb', 'sgftre_permisos', 'empl_vacunado'])
                 ->make(true);
         }
