@@ -139,6 +139,7 @@ class EmpleadoController extends Controller
                     DB::raw("'' as sgftre_permisos")
                 ])
                     ->join('cat_cargos', 'empleados.empl_crgo_id', '=', 'crgo_id')
+                    ->leftJoin('solicitudes_gafetes_reasignar', 'empleados.empl_id', '=', 'solicitudes_gafetes_reasignar.sgftre_empl_id')
                     ->whereEmplLcalId($local->lcal_id)
                     ->groupBy('empleados.empl_id')
                     ->orderBy('empleados.empl_nombre')
@@ -172,10 +173,10 @@ class EmpleadoController extends Controller
                     $sql = "crgo_descripcion  like ?";
                     $query->whereRaw($sql, ["%{$keyword}%"]);
                 })
-                // ->filterColumn('sgftre_permisos', function ($query, $keyword) {
-                //     $sql = "sgftre_permisos  like ?";
-                //     $query->whereRaw($sql, ["%{$keyword}%"]);
-                // })
+                ->filterColumn('sgftre_permisos', function ($query, $keyword) {
+                    $sql = "sgftre_permisos  like ?";
+                    $query->whereRaw($sql, ["%{$keyword}%"]);
+                })
                 ->rawColumns(['empl_thumb', 'sgftre_permisos', 'empl_vacunado'])
                 ->make(true);
         }
