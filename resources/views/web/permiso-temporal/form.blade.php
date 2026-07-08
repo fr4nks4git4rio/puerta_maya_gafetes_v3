@@ -72,18 +72,21 @@
             </div>
 
             <div class="row form-group">
-                {!! Form::label('ptmp_cert_vacuna', 'Certificado (2mb máx.)' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_cert_vacuna', 'Identificación oficial (2mb máx.)' , ['class' => 'col-sm-4 control-label']); !!}
                 <div class="col-sm-8">
-                    @if(isset($permiso) && $permiso->ptmp_cert_vacuna)
-                        <img src="/certificados_vacunacion/{{$permiso->ptmp_cert_vacuna}}"
-                             alt="" class="img-fluid" id="img_cert_vacuna">
-                    @else
                         <a class="btn btn-primary file-btn w-100">
-                            {!! Form::file('ptmp_cert_vacuna',["accept"=>"image/jpeg,image/png,application/pdf", 'disabled' => true]) !!}
+                        {!! Form::file('ptmp_cert_vacuna', ['accept' => 'image/jpeg,image/png,application/pdf']) !!}
                         </a>
-                        <small class="text-danger"><span class="fa fa-question-circle"></span>&nbsp;Recuerde que si no
-                            sube un certificado de vacunación será necesario que muestre una prueba de PCR con resultado
-                            negativo al entrar a la plaza.</small>
+                    @if (isset($permiso) && $permiso->ptmp_cert_vacuna)
+                        <div class="position-relative">
+                            <a href="javascript:void;" class="btn btn-primary btn-xs position-absolute"
+                                style="left: 10px; top: 10px" id="zoom_frame"
+                                onclick="document.getElementById('frame_certificado').requestFullscreen()"><i
+                                    class="fa fa-search-plus"></i></a>
+                            <iframe height="200" allow="fullscreen" id="frame_certificado" style="width: stretch"
+                                src="/certificados_vacunacion/{{ $permiso->ptmp_cert_vacuna }}?{{ now() }}">
+                            </iframe>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -242,19 +245,6 @@
                     $('#ptmp_vigencia_final').val(fin);
 
                 });
-
-                document.getElementById('ptmp_vacunado').addEventListener('click', function (event) {
-                    if (this.checked) {
-                        document.getElementById('ptmp_cert_vacuna').removeAttribute('disabled');
-                    } else {
-                        document.getElementById('ptmp_cert_vacuna').setAttribute('disabled', true);
-                    }
-                });
-
-                if (document.getElementById('ptmp_vacunado').checked) {
-                    document.getElementById('ptmp_cert_vacuna').removeAttribute('disabled');
-                }
-
 
                 $this.initCroppie();
 

@@ -392,7 +392,15 @@ class PermisoTemporalController extends Controller
             try {
 
 
-                $data = \Arr::except($this->data, ['data_photo']);
+                $data = \Arr::except($this->data, ['data_photo', 'ptmp_cert_vacuna']);
+
+                if ($request->hasFile('ptmp_cert_vacuna')) {
+                    if ($permiso->ptmp_cert_vacuna && Storage::disk('certificados_vacunacion')->exists($permiso->ptmp_cert_vacuna)) {
+                        Storage::disk('certificados_vacunacion')->delete($permiso->ptmp_cert_vacuna);
+                    }
+                    $data['ptmp_cert_vacuna'] = $request->file('ptmp_cert_vacuna')
+                        ->storeAs('', $permiso->getKey() . "_Permiso_Temporal." . $request->file('ptmp_cert_vacuna')->extension(), 'certificados_vacunacion');
+                }
 
                 $data['ptmp_created_by'] = auth()->user()->id;
                 $data['ptmp_comentario_admin'] = "";
