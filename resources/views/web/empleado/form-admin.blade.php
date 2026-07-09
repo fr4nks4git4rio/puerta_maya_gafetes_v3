@@ -53,8 +53,8 @@
                 </div>
             </div>
 
-            <div class="form-group row">
-                {!! Form::label('empl_vacunado', 'Vacunado' , ['class' => 'col-sm-4 control-label']); !!}
+            <div class="form-group row" style="display: none">
+                {!! Form::label('empl_vacunado', 'Vacunado', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
                     {!! Form::checkbox('empl_vacunado', null, null,["class"=>"form-control input-sm"]);!!}
                     <br>
@@ -63,9 +63,9 @@
                 </div>
             </div>
 
-            @if(isset($empleado))
-                <div class="form-group row">
-                    {!! Form::label('empl_vacuna_validada', 'Vacuna Validada' , ['class' => 'col-sm-4 control-label']); !!}
+            @if (isset($empleado))
+                <div class="form-group row" style="display: none">
+                    {!! Form::label('empl_vacuna_validada', 'Vacuna Validada', ['class' => 'col-sm-4 control-label']) !!}
                     <div class="col-sm-8">
                         {!! Form::checkbox('empl_vacuna_validada', null, null,["class"=>"form-control input-sm"]);!!}
                         <br>

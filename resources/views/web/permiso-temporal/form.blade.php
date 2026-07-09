@@ -61,8 +61,8 @@
                 </div>
             </div>
 
-            <div class="form-group row">
-                {!! Form::label('ptmp_vacunado', 'Vacunado' , ['class' => 'col-sm-4 control-label']); !!}
+            <div class="form-group row" style="display: none">
+                {!! Form::label('ptmp_vacunado', 'Vacunado', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
                     {!! Form::checkbox('ptmp_vacunado', null, null,["class"=>"form-control input-sm"]);!!}
                     <br>
