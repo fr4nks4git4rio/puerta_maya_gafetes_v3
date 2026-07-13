@@ -221,6 +221,9 @@ class GateController extends Controller
 
             $solicitud = $gafete->getOriginalRecord();
 
+            if(!$solicitud)
+                return response()->json($this->ajaxResponse(false, "La solicitud que busca ha sido eliminada."));
+
             if ($solicitud->Puertas()->count() == 0)
                 return response()->json($this->ajaxResponse(false, "La tarjeta no puede ser activada. No cuenta con puertas con permisos vinculadas."));
 
