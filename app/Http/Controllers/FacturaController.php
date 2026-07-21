@@ -174,10 +174,19 @@ class FacturaController extends Controller
 
         if ($request->ajax()) {
             return Datatables::of(
-                Factura::select(['fact_id', 'fact_fecha_emision', 'fact_fecha_certificacion',
-                    'fact_nombre_receptor', 'fact_tipo_cambio', 'fact_uuid',
-                    'fact_subtotal', 'fact_iva', 'fact_total',
-                    'fact_estado', 'fact_test_mode'])
+                Factura::select([
+                    'fact_id',
+                    'fact_fecha_emision',
+                    'fact_fecha_certificacion',
+                    'fact_nombre_receptor',
+                    'fact_tipo_cambio',
+                    'fact_uuid',
+                    'fact_subtotal',
+                    'fact_iva',
+                    'fact_total',
+                    'fact_estado',
+                    'fact_test_mode'
+                ])
                     ->whereFactLcalId($local->lcal_id)
             )
                 ->editColumn('fact_estado', function (Factura $model) {
@@ -190,7 +199,6 @@ class FacturaController extends Controller
                     $html = '<div class="text-center"><small class="badge ' . $color . '">' . $model->fact_estado . '</small>';
                     $html .= '</div>';
                     return $html;
-
                 })
                 ->addColumn('actions', function (Factura $model) {
 
@@ -217,9 +225,9 @@ class FacturaController extends Controller
 
                     return $html;
                 })
-//                        ->filterColumn('ptmp_comentario', function($query, $keyword) {
-//                                $query->whereRaw(" CONCAT(ptmp_comentario, ' ', ptmp_comentario_admin) like ?", ["%{$keyword}%"]);
-//                            })
+                //                        ->filterColumn('ptmp_comentario', function($query, $keyword) {
+                //                                $query->whereRaw(" CONCAT(ptmp_comentario, ' ', ptmp_comentario_admin) like ?", ["%{$keyword}%"]);
+                //                            })
 
                 ->rawColumns(['fact_estado', 'actions'])
                 ->make(true);
@@ -252,7 +260,6 @@ class FacturaController extends Controller
 
 
         return view('web.factura.index', compact('dataTable', 'local'));
-
     }
 
     public function form(Factura $factura = null, Request $request)
@@ -326,20 +333,19 @@ class FacturaController extends Controller
         $comprobantes = ['' => 'Recuperando comprobantes capturados...'];
 
         return view('web.factura.form-agregar-concepto', compact('productos', 'unidades', 'url', 'conceptos', 'comprobantes'));
-
     }
 
     public function formSendMail(Factura $factura)
     {
 
-//        if ($factura->fact_estado != 'TIMBRADA') {
-//            return '<b class="text-danger">La factura debe estar timbrada</b>';
-//        }
+        //        if ($factura->fact_estado != 'TIMBRADA') {
+        //            return '<b class="text-danger">La factura debe estar timbrada</b>';
+        //        }
 
-//        if (!$factura->Local) {
-//            return '<b class="text-danger">La factura no está asignada a ningún Local aun!</b>';
-//        }
-//        dd($factura);
+        //        if (!$factura->Local) {
+        //            return '<b class="text-danger">La factura no está asignada a ningún Local aun!</b>';
+        //        }
+        //        dd($factura);
 
         $url = url('factura/do-send-mail');
 
@@ -364,7 +370,6 @@ class FacturaController extends Controller
         $body = "Se adjunta factura y soporte correspondiente al pago de gafetes en el mes actual:" . today()->format('m/Y') . ".<br>Saludos cordiales";
 
         return view('web.factura.form-send-mail', compact('url', 'factura', 'receptor', 'topic', 'body', 'nombre_comercial'));
-
     }
 
     public function validarConcepto(Request $request)
@@ -373,7 +378,6 @@ class FacturaController extends Controller
         if (!$this->validateAction('validar-concepto')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
 
             $comprobantes = collect(ComprobantePago::getComprobantesDisponiblesParaFactura());
@@ -390,7 +394,6 @@ class FacturaController extends Controller
 
             return response()->json($this->ajaxResponse(true, 'Datos validados!', $this->data));
         }
-
     }
 
     public function insert(Request $request)
@@ -399,7 +402,6 @@ class FacturaController extends Controller
         if (!$this->validateAction('insert')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
 
 
@@ -424,7 +426,7 @@ class FacturaController extends Controller
                 $data_factura['fact_total'] = $data['total_importe'];
                 $data_factura['fact_tipo_cambio'] = 1; //MXN
                 $data_factura['fact_regimenfiscal_id'] = 1; //601 - General de Ley de Personas Morales
-//                $data_factura['fact_test_mode'] = 1; //MXN
+                //                $data_factura['fact_test_mode'] = 1; //MXN
 
 
                 if ($data_factura['fact_moneda_id'] == 2) {
@@ -446,14 +448,10 @@ class FacturaController extends Controller
 
                 \DB::commit();
                 return response()->json($this->ajaxResponse(true, 'Factura <b>CREADA</b> correctamente.'));
-
-
             } catch (\Exception $e) {
                 \DB::rollBack();
                 return response()->json($this->ajaxResponse(false, "Error en el servidor!", $e->getMessage() . $e->getFile() . $e->getLine()));
             }
-
-
         }
     }
 
@@ -463,29 +461,40 @@ class FacturaController extends Controller
 
     public function indexContabilidad(Request $request, Builder $htmlBuilder)
     {
-//        //detrminamos el local
-//        $usuario = \Auth::getUser();
-//        if($usuario->usr_lcal_id == null){
-//            return '<p class="alert alert-danger"> No existe un local asignado al usuario. <br> Contacte al administrador.</p>';
-//        }
-//        $local = $usuario->Local;
+        //        //detrminamos el local
+        //        $usuario = \Auth::getUser();
+        //        if($usuario->usr_lcal_id == null){
+        //            return '<p class="alert alert-danger"> No existe un local asignado al usuario. <br> Contacte al administrador.</p>';
+        //        }
+        //        $local = $usuario->Local;
         // dd($usuario,$local);
 
         if ($request->ajax()) {
             return Datatables::of(
-                Factura::select(['fact_id', \DB::raw(" DATE(fact_fecha_emision) as fact_fecha_emision"), 'fact_fecha_certificacion', 'fact_rfc_receptor',
-                    'fact_nombre_receptor', 'fact_tipo_cambio', 'fact_uuid', 'fact_cpag_id',
-                    'fact_subtotal', 'fact_iva', 'fact_total',
+                Factura::select([
+                    'fact_id',
+                    \DB::raw(" DATE(fact_fecha_emision) as fact_fecha_emision"),
+                    'fact_fecha_certificacion',
+                    'fact_rfc_receptor',
+                    'fact_nombre_receptor',
+                    'fact_tipo_cambio',
+                    'fact_uuid',
+                    'fact_cpag_id',
+                    'fact_subtotal',
+                    'fact_iva',
+                    'fact_total',
                     \DB::raw("CONCAT( c_usocfdi.codigo, '',c_usocfdi.descripcion) as uso_cfdi"),
                     \DB::raw("CONCAT( c_formapago.codigo, '',c_formapago.descripcion) as forma_pago"),
-                    'fact_estado', 'fact_test_mode'])
+                    'fact_estado',
+                    'fact_test_mode'
+                ])
                     ->join('c_usocfdi', 'fact_usocfdi_id', 'c_usocfdi.id')
                     ->join('c_formapago', 'fact_formapago_id', 'c_formapago.id')
                     ->leftJoin('comprobantes_pago', 'fact_cpag_id', '=', 'cpag_id')
-//                ->whereIn('fact_estado',['PRECAPTURADA','CAPTURADA'])
+                    //                ->whereIn('fact_estado',['PRECAPTURADA','CAPTURADA'])
                     ->whereRaw("fact_estado = 'CAPTURADA' OR ( fact_estado = 'PRECAPTURADA' AND cpag_estado = 'VALIDADO'  )")
-//                    ->where('fact_rfc_receptor','XAXX010101000')
-//                    ->whereFactLcalId($local->lcal_id)
+                //                    ->where('fact_rfc_receptor','XAXX010101000')
+                //                    ->whereFactLcalId($local->lcal_id)
             )
                 ->editColumn('fact_estado', function (Factura $model) {
 
@@ -497,7 +506,6 @@ class FacturaController extends Controller
                     $html = '<div class="text-center"><small class="badge ' . $color . '">' . $model->fact_estado . '</small>';
                     $html .= '</div>';
                     return $html;
-
                 })
                 ->addColumn('actions', function (Factura $model) {
 
@@ -510,19 +518,18 @@ class FacturaController extends Controller
                     }
                     if ($model->fact_estado == 'PRECAPTURADA') {
 
-//                        $html .= '<span class="btn btn-primary btn-sm btn-validar" title="Validar Comprobante" data-id=' . $model->fact_cpag_id. '><i class="ti-check"></i></span>';
+                        //                        $html .= '<span class="btn btn-primary btn-sm btn-validar" title="Validar Comprobante" data-id=' . $model->fact_cpag_id. '><i class="ti-check"></i></span>';
 
                         $html .= '<span class="btn btn-primary btn-sm btn-capturar" title="Capturar" data-id=' . $model->fact_id . '><i class="ti-save"></i></span>';
-
                     }
                     if ($model->fact_estado != 'PRECAPTURADA') {
 
                         $html .= '<span class="btn btn-primary btn-sm btn-pdf" title="Mostrar PDF Capturado" data-id=' . $model->fact_id . '><i class="fa fa-file-pdf-o"></i></span>';
                         $html .= '<span class="btn btn-primary btn-sm btn-send-mail" title="Enviar por correo" data-id=' . $model->fact_id . '><i class="fa fa-envelope"></i></span>';
 
-//                        if($model->fact_rfc_receptor == 'XAXX010101000'){
+                        //                        if($model->fact_rfc_receptor == 'XAXX010101000'){
                         $html .= '<span class="btn btn-primary btn-sm btn-comprobantes" title="Listado de comprobantes" data-id=' . $model->fact_id . '><i class="fa fa-list"></i></span>';
-//                        }
+                        //                        }
 
                         if ($model->fact_estado == 'CAPTURADA') {
                             $html .= '<span class="btn btn-primary btn-sm btn-editar" title="Editar" data-id=' . $model->fact_id . '><i class="fa fa-edit"></i></span>';
@@ -537,7 +544,6 @@ class FacturaController extends Controller
                         if ($model->fact_estado == 'TIMBRADA') {
                             $html .= '<span class="btn btn-primary btn-sm btn-cancelar" title="Cancelar" data-id=' . $model->fact_id . '><i class="fa fa-ban"></i></span>';
                         }
-
                     }
 
                     $html .= '</div>';
@@ -572,12 +578,12 @@ class FacturaController extends Controller
             ->addColumn(['data' => 'fact_id', 'name' => 'fact_id', 'title' => 'Folio', 'visible' => false])
             ->addColumn(['data' => 'fact_cpag_id', 'name' => 'fact_cpag_id', 'title' => 'Comprobante', 'visible' => true])
             ->addColumn(['data' => 'fact_fecha_emision', 'name' => 'fact_fecha_emision', 'title' => 'Creación'])
-//            ->addColumn(['data' => 'fact_fecha_certificacion', 'name' => 'fact_fecha_certificacion', 'title' => 'Certificación'])
+            //            ->addColumn(['data' => 'fact_fecha_certificacion', 'name' => 'fact_fecha_certificacion', 'title' => 'Certificación'])
             ->addColumn(['data' => 'fact_nombre_receptor', 'name' => 'fact_nombre_receptor', 'title' => 'Receptor'])
-//            ->addColumn(['data' => 'fact_tipo_cambio', 'name' => 'fact_tipo_cambio', 'title' => 'TC', 'search'=>false])
-//            ->addColumn(['data' => 'fact_uuid', 'name' => 'fact_uuid', 'title' => 'UUID'])
-//            ->addColumn(['data' => 'fact_subtotal', 'name' => 'fact_subtotal', 'title' => 'Subtotal', 'search'=>false])
-//            ->addColumn(['data' => 'fact_iva', 'name' => 'fact_iva', 'title' => 'IVA', 'search'=>false])
+            //            ->addColumn(['data' => 'fact_tipo_cambio', 'name' => 'fact_tipo_cambio', 'title' => 'TC', 'search'=>false])
+            //            ->addColumn(['data' => 'fact_uuid', 'name' => 'fact_uuid', 'title' => 'UUID'])
+            //            ->addColumn(['data' => 'fact_subtotal', 'name' => 'fact_subtotal', 'title' => 'Subtotal', 'search'=>false])
+            //            ->addColumn(['data' => 'fact_iva', 'name' => 'fact_iva', 'title' => 'IVA', 'search'=>false])
 
             ->addColumn(['data' => 'uso_cfdi', 'name' => 'uso_cfdi', 'title' => 'Uso CFDI', 'search' => false])
             ->addColumn(['data' => 'forma_pago', 'name' => 'forma_pago', 'title' => 'Forma de Pago', 'search' => false])
@@ -588,7 +594,6 @@ class FacturaController extends Controller
         $hora = date('H:i:s');
 
         return view('web.factura.index-contabilidad', compact('dataTable', 'hora'));
-
     }
 
     public function formContabilidad(Factura $factura = null, Request $request)
@@ -637,8 +642,18 @@ class FacturaController extends Controller
             ->pluck('descripcion', 'id');
         /////////////////////////////////////////////////////////
 
-        return view('web.factura.form-contabilidad', compact('factura', 'url', 'series', 'usocfdi',
-            'monedas', 'formaspago', 'metodospago', 'productos', 'unidades', 'locales'));
+        return view('web.factura.form-contabilidad', compact(
+            'factura',
+            'url',
+            'series',
+            'usocfdi',
+            'monedas',
+            'formaspago',
+            'metodospago',
+            'productos',
+            'unidades',
+            'locales'
+        ));
     }
 
     public function formContabilidadGlobal(Factura $factura = null, Request $request)
@@ -699,10 +714,26 @@ class FacturaController extends Controller
 
         $receptor = Local::find(129);
 
-        return view('web.factura.form-contabilidad-global',
-            compact('factura', 'url', 'series', 'usocfdi',
-                'monedas', 'formaspago', 'metodospago', 'productos', 'receptor',
-                'unidades', 'comprobantes', 'periodicidades', 'meses', 'anios', 'objetos_impuesto'));
+        return view(
+            'web.factura.form-contabilidad-global',
+            compact(
+                'factura',
+                'url',
+                'series',
+                'usocfdi',
+                'monedas',
+                'formaspago',
+                'metodospago',
+                'productos',
+                'receptor',
+                'unidades',
+                'comprobantes',
+                'periodicidades',
+                'meses',
+                'anios',
+                'objetos_impuesto'
+            )
+        );
     }
 
     public function formFacturaManual(Factura $factura = null, Request $request)
@@ -760,13 +791,28 @@ class FacturaController extends Controller
 
         $receptores = Local::with('RegimenFiscal')->get();
 
-//        $receptor = Local::find(129);
+        //        $receptor = Local::find(129);
         /////////////////////////////////////////////////////////
 
-        return view('web.factura.form-factura-manual',
-            compact('factura', 'url', 'series', 'usocfdi',
-                'monedas', 'formaspago', 'metodospago', 'productos', 'receptores',
-                'unidades', 'periodicidades', 'meses', 'anios', 'objetos_impuesto'));
+        return view(
+            'web.factura.form-factura-manual',
+            compact(
+                'factura',
+                'url',
+                'series',
+                'usocfdi',
+                'monedas',
+                'formaspago',
+                'metodospago',
+                'productos',
+                'receptores',
+                'unidades',
+                'periodicidades',
+                'meses',
+                'anios',
+                'objetos_impuesto'
+            )
+        );
     }
 
     public function formEditarSm(Factura $factura, Request $request)
@@ -804,10 +850,16 @@ class FacturaController extends Controller
         $factura->fcdt_objeto_impuesto_id = $factura->Conceptos->first()->fcdt_objeto_impuesto_id;
         $factura->fcdt_concepto = $factura->Conceptos->first()->fcdt_concepto;
 
-        return view('web.factura.form-editar-sm', compact('url', 'factura', 'formas_pago', 'usos_cfdi',
-            'periodicidades', 'meses', 'anios', 'objetos_impuesto'));
-
-
+        return view('web.factura.form-editar-sm', compact(
+            'url',
+            'factura',
+            'formas_pago',
+            'usos_cfdi',
+            'periodicidades',
+            'meses',
+            'anios',
+            'objetos_impuesto'
+        ));
     }
 
     public function formCancelar(Factura $factura, Request $request)
@@ -823,8 +875,6 @@ class FacturaController extends Controller
         $facturas_timbradas = Factura::where('fact_estado', 'TIMBRADA')->get()->pluck('label_combo', 'fact_id');
 
         return view('web.factura.form-cancelar-factura', compact('url', 'factura', 'motivos_cancelacion', 'facturas_timbradas'));
-
-
     }
 
     public function formAsociarComprobantesFacturaManual()
@@ -835,8 +885,11 @@ class FacturaController extends Controller
 
         $comprobantes = ComprobantePago::getFacturablesGlobal();
 
-        return view('web.factura.form-asociar-factura-manual', compact('url', 'facturas_manuales',
-            'comprobantes'));
+        return view('web.factura.form-asociar-factura-manual', compact(
+            'url',
+            'facturas_manuales',
+            'comprobantes'
+        ));
     }
 
     /////////////////////////////////////////////////////////////////////////////////////
@@ -845,10 +898,24 @@ class FacturaController extends Controller
     {
         if ($request->ajax()) {
 
-            $records = Factura::select(['fact_id', \DB::raw('DATE(fact_fecha_emision) as fact_fecha_emision'), \DB::raw('DATE(fact_fecha_certificacion) as fact_fecha_certificacion'), 'fact_cpag_id',
-                'fact_nombre_receptor', 'fact_tipo_cambio', 'fact_uuid', 'fact_rfc_receptor', 'fact_lcal_id', 'fact_folio',
-                'fact_subtotal', 'fact_iva', 'fact_total', \DB::raw('c_serie.descripcion as fact_serie'),
-                'fact_estado', 'fact_test_mode'])
+            $records = Factura::select([
+                'fact_id',
+                \DB::raw('DATE(fact_fecha_emision) as fact_fecha_emision'),
+                \DB::raw('DATE(fact_fecha_certificacion) as fact_fecha_certificacion'),
+                'fact_cpag_id',
+                'fact_nombre_receptor',
+                'fact_tipo_cambio',
+                'fact_uuid',
+                'fact_rfc_receptor',
+                'fact_lcal_id',
+                'fact_folio',
+                'fact_subtotal',
+                'fact_iva',
+                'fact_total',
+                \DB::raw('c_serie.descripcion as fact_serie'),
+                'fact_estado',
+                'fact_test_mode'
+            ])
                 ->join('c_serie', 'fact_serie_id', 'c_serie.id')
                 ->whereIn('fact_estado', ['TIMBRADA', 'CANCELADA']);
 
@@ -887,14 +954,13 @@ class FacturaController extends Controller
                 ->editColumn('fact_estado', function (Factura $model) {
 
                     $color = 'badge-primary';
-//                    if($model->fact_estado  == 'CAPTURADA') $color = 'badge-warning';
+                    //                    if($model->fact_estado  == 'CAPTURADA') $color = 'badge-warning';
                     if ($model->fact_estado == 'TIMBRADA') $color = 'badge-success';
                     if ($model->fact_estado == 'CANCELADA') $color = 'badge-danger';
 
                     $html = '<div class="text-center"><small class="badge ' . $color . '">' . $model->fact_estado . '</small>';
                     $html .= '</div>';
                     return $html;
-
                 })
                 ->editColumn('fact_uuid', function (Factura $model) {
 
@@ -903,7 +969,6 @@ class FacturaController extends Controller
                     }
 
                     return $model->fact_uuid;
-
                 })
                 ->addColumn('tipo', function (Factura $model) {
 
@@ -911,8 +976,6 @@ class FacturaController extends Controller
                         return 'COMPROBANTE GLOBAL';
 
                     return 'FACTURA';
-
-
                 })
                 ->addColumn('actions', function (Factura $model) {
 
@@ -925,10 +988,10 @@ class FacturaController extends Controller
                     endif;
 
 
-//                    if($model->fact_estado == 'CAPTURADA'){
-//                        $html .= '<span class="btn btn-primary btn-sm btn-timbrar" title="Timbrar" data-id=' . $model->fact_id. '><i class="fa fa-bell"></i></span>';
-//
-//                    }
+                    //                    if($model->fact_estado == 'CAPTURADA'){
+                    //                        $html .= '<span class="btn btn-primary btn-sm btn-timbrar" title="Timbrar" data-id=' . $model->fact_id. '><i class="fa fa-bell"></i></span>';
+                    //
+                    //                    }
 
                     $html .= '<span class="btn btn-primary btn-sm btn-pdf" title="Formato PDF" data-id=' . $model->fact_id . '><i class="fa fa-file-pdf-o"></i></span>';
                     $html .= '<span class="btn btn-primary btn-sm btn-comprobantes" title="Listado de comprobantes" data-id=' . $model->fact_id . '><i class="fa fa-list"></i></span>';
@@ -937,8 +1000,8 @@ class FacturaController extends Controller
 
                     if ($model->fact_estado == 'TIMBRADA') {
 
-//                        if ($model->fact_lcal_id > 0) {
-//                        }
+                        //                        if ($model->fact_lcal_id > 0) {
+                        //                        }
                         $html .= '<span class="btn btn-primary btn-sm btn-send-mail" title="Enviar por correo" data-id=' . $model->fact_id . '><i class="fa fa-envelope"></i></span>';
                         $html .= '<span class="btn btn-primary btn-sm btn-cancelar" title="Cancelar" data-id=' . $model->fact_id . '><i class="fa fa-ban"></i></span>';
                     }
@@ -999,7 +1062,6 @@ class FacturaController extends Controller
 
 
         return view('web.factura.index-almacen-facturas', compact('dataTable'));
-
     }
 
 
@@ -1022,7 +1084,6 @@ class FacturaController extends Controller
             ->update(['cpag_fact_id' => null]);
 
         return response()->json($this->ajaxResponse(true, 'Factura eliminada.'));
-
     }
 
     public function doEditarSm(Request $request)
@@ -1031,14 +1092,13 @@ class FacturaController extends Controller
         if (!$this->validateAction('do-edit-sm')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
 
 
             \DB::beginTransaction();
             try {
 
-//                dd($this->data);
+                //                dd($this->data);
 
                 $factura = Factura::findOrFail($this->data['fact_id']);
 
@@ -1071,15 +1131,11 @@ class FacturaController extends Controller
                 \DB::commit();
 
                 return response()->json($this->ajaxResponse(true, 'Factura editada correctamente.'));
-
             } catch (\Exception $e) {
                 \DB::rollBack();
                 return response()->json($this->ajaxResponse(false, "Error en el servidor!", $e->getMessage()));
             }
-
-
         }
-
     }
 
     /**
@@ -1104,14 +1160,12 @@ class FacturaController extends Controller
         $factura->fact_estado = 'CAPTURADA';
         $factura->save();
 
-//        $factura->delete();
-//
-//        ComprobantePago::where('cpag_fact_id',$factura->fact_id)
-//            ->update(['cpag_fact_id'=>null]);
+        //        $factura->delete();
+        //
+        //        ComprobantePago::where('cpag_fact_id',$factura->fact_id)
+        //            ->update(['cpag_fact_id'=>null]);
 
         return response()->json($this->ajaxResponse(true, 'Cambio de estado exitoso.'));
-
-
     }
 
     public function doTimbrar(Factura $factura)
@@ -1123,7 +1177,7 @@ class FacturaController extends Controller
 
         try {
             //establecemos la hora  de CDMX que es la usa el PAC/SAT
-//            date_default_timezone_set('America/Mexico_City');
+            //            date_default_timezone_set('America/Mexico_City');
             date_default_timezone_set('Etc/GMT+6');
 
             //construimos el XML
@@ -1178,10 +1232,10 @@ class FacturaController extends Controller
                 $Builder->setAtributoReceptor('DomicilioFiscalReceptor', $factura->Local->lcal_codigo_postal);
             }
 
-//            $Builder->setAtributoReceptor('UsoCFDI', $factura->UsoCfdi->codigo);
-//
-//            $Builder->setAtributoReceptor('Rfc', $factura->fact_rfc_receptor);
-//            $Builder->setAtributoReceptor('Nombre', $factura->fact_nombre_receptor);
+            //            $Builder->setAtributoReceptor('UsoCFDI', $factura->UsoCfdi->codigo);
+            //
+            //            $Builder->setAtributoReceptor('Rfc', $factura->fact_rfc_receptor);
+            //            $Builder->setAtributoReceptor('Nombre', $factura->fact_nombre_receptor);
 
 
             ///////////////////////////////////////////////////////////////////////
@@ -1204,7 +1258,7 @@ class FacturaController extends Controller
                 $Builder->setAtributoConcepto('Importe', $facturaDetalle->fcdt_precio);
                 $Builder->setAtributoConcepto('Descripcion', $descripcion);
                 $Builder->setAtributoConcepto('ClaveUnidad', $cod_unidad);
-//                if ($factura->fact_lcal_id != null && $factura->lcal_id != 129)
+                //                if ($factura->fact_lcal_id != null && $factura->lcal_id != 129)
                 $Builder->setAtributoConcepto('ObjetoImp', $objImp);
                 $Builder->setAtributoConcepto('ClaveProdServ', $producto);
                 $Builder->setAtributoConcepto('Cantidad', $facturaDetalle->fcdt_cantidad);
@@ -1232,7 +1286,7 @@ class FacturaController extends Controller
             if (!is_dir($path)) {
                 // dir doesn't exist, make it
                 mkdir($path, 0777, true);
-//                chmod($path,0775);
+                //                chmod($path,0775);
             }
 
             $filename = $path . 'PRE_' . date('YmdHis') . '.xml';
@@ -1250,7 +1304,7 @@ class FacturaController extends Controller
             }
 
             //forzar pruebas
-//            $Timbrador->modo_pruebas();
+            //            $Timbrador->modo_pruebas();
 
 
             $result = $Timbrador->timbra($factura->fact_id, $xmlOrig);
@@ -1324,7 +1378,6 @@ class FacturaController extends Controller
         if (!$this->validateAction('do-cancelar')) {
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
-
         } else {
             if ($this->data['fact_motivo_cancelacion_id'] == 1 && $this->data['folio_sustituto'] == null) {
                 return response()->json($this->ajaxResponse(false, 'Debe seleccionar un Folio Sustituto!'));
@@ -1364,19 +1417,15 @@ class FacturaController extends Controller
                         ->update(['cpag_fact_id' => $clon->fact_id]);
 
                     return response()->json($this->ajaxResponse(true, 'Se canceló el CFDI exitosamente.', $result));
-
                 } else {
 
                     $error = 'Error al cancelar: ' . $result['msg'];
                     return response()->json($this->ajaxResponse(false, $error));
                 }
-
             } catch (\Exception $e) {
                 return response()->json($this->ajaxResponse(false, $e->getMessage()));
             }
         }
-
-
     }
 
     /**
@@ -1392,7 +1441,6 @@ class FacturaController extends Controller
         }
 
         return response()->download($factura->fact_xml_path, $factura->fact_uuid . '.xml');
-
     }
 
     public function doFormatoPdf(Factura $factura)
@@ -1400,14 +1448,13 @@ class FacturaController extends Controller
 
 
         if ($factura->fact_uuid == "") {
-//            return response() -> json($this->ajaxResponse(false,'La factura no se ha timbrado todavía.'));
+            //            return response() -> json($this->ajaxResponse(false,'La factura no se ha timbrado todavía.'));
         }
 
         $report = new FormatoFacturaPDF(null, true, false);
         $report->setFactura($factura);
 
         return $report->exec();
-
     }
 
     public function doListadoComprobantesPdf(Factura $factura)
@@ -1418,7 +1465,6 @@ class FacturaController extends Controller
         $report->setFactura($factura);
 
         return $report->exec();
-
     }
 
     public function doExportExcel(Request $request)
@@ -1430,14 +1476,15 @@ class FacturaController extends Controller
             \DB::raw(" date(fact_fecha_certificacion) "),
             \DB::raw('c_serie.descripcion as fact_serie'),
             'fact_folio',
-//            'fact_rfc_receptor',
+            //            'fact_rfc_receptor',
             'fact_nombre_receptor',
             'fact_subtotal',
             'fact_iva',
             'fact_total',
             'fact_tipo_cambio',
             'fact_uuid',
-            'fact_estado'])
+            'fact_estado'
+        ])
             ->join('c_serie', 'fact_serie_id', 'c_serie.id')
             ->whereIn('fact_estado', ['TIMBRADA', 'CANCELADA']);
 
@@ -1478,8 +1525,6 @@ class FacturaController extends Controller
         } catch (\Exception $e) {
             dd($e);
         }
-
-
     }
 
 
@@ -1516,9 +1561,9 @@ class FacturaController extends Controller
 
                 return response()->json($this->ajaxResponse(true, 'Proceso exitoso.'));
 
-//                } else {
-//                    return response()->json($this->ajaxResponse(false, 'No se encontró ningun usuario con el correo indicado.'));
-//                }
+                //                } else {
+                //                    return response()->json($this->ajaxResponse(false, 'No se encontró ningun usuario con el correo indicado.'));
+                //                }
 
             } catch (\Exception $e) {
                 return response()->json($this->ajaxResponse(false, $e->getMessage()));
@@ -1537,8 +1582,6 @@ class FacturaController extends Controller
             ->render();
 
         return response()->json(compact('comprobantes', 'local', 'vista_comprobantes'));
-
-
     }
 
     public function doAsociarComprobantesFacturaManual(Request $request)
@@ -1565,9 +1608,13 @@ class FacturaController extends Controller
 
         //Copiamos la factura para pasarla a estado CAPTURADA
         $except_fields = [
-            'fact_uuid', 'fact_folio', 'fact_test_mode',
-            'fact_fecha_certificacion', 'fact_cadena_original',
-            'fact_qr_code_path', 'fact_xml_path'
+            'fact_uuid',
+            'fact_folio',
+            'fact_test_mode',
+            'fact_fecha_certificacion',
+            'fact_cadena_original',
+            'fact_qr_code_path',
+            'fact_xml_path'
         ];
         $clonFactura = $facturaOriginal->replicate($except_fields);
         $clonFactura->fact_estado = 'CAPTURADA';
@@ -1578,13 +1625,9 @@ class FacturaController extends Controller
             $c_clon = $c->replicate();
             $c_clon->fcdt_fact_id = $clonFactura->fact_id;
             $c_clon->save();
-
         }
 
 
         return $clonFactura;
-
-
     }
-
 }

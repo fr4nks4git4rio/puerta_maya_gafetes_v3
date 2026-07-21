@@ -395,9 +395,9 @@ class EmpleadoController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
 
-            if (!$request->hasFile('empl_cert_vacuna')) {
-                return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
-            }
+            // if (!$request->hasFile('empl_cert_vacuna')) {
+            //     return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
+            // }
 
             DB::beginTransaction();
 
@@ -407,13 +407,14 @@ class EmpleadoController extends Controller
                 }
 
                 $data = Arr::except($this->data, ['data_photo', 'empl_cert_vacuna']);
-                    if ($request->hasFile('empl_cert_vacuna')) {
-                        if ($empleado->empl_cert_vacuna && Storage::disk('certificados_vacunacion')->exists($empleado->empl_cert_vacuna)) {
-                            Storage::disk('certificados_vacunacion')->delete($empleado->empl_cert_vacuna);
-                        }
-                        $data['empl_cert_vacuna'] = $request->file('empl_cert_vacuna')
-                            ->storeAs('', $empleado->getKey() . "_Empleado." . $request->file('empl_cert_vacuna')->extension(), 'certificados_vacunacion');
+                if ($request->hasFile('empl_cert_vacuna')) {
+                    if ($empleado->empl_cert_vacuna && Storage::disk('certificados_vacunacion')->exists($empleado->empl_cert_vacuna)) {
+                        Storage::disk('certificados_vacunacion')->delete($empleado->empl_cert_vacuna);
                     }
+                    $data['empl_cert_vacuna'] = $request->file('empl_cert_vacuna')
+                        ->storeAs('', $empleado->getKey() . "_Empleado." . $request->file('empl_cert_vacuna')->extension(), 'certificados_vacunacion');
+                    $data['empl_vacuna_validada']  = 0;
+                }
                 $empleado->update($data);
 
                 // ----------------
@@ -450,14 +451,14 @@ class EmpleadoController extends Controller
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
 
-            if (!$request->hasFile('empl_cert_vacuna')) {
-                return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
-            }
+            // if (!$request->hasFile('empl_cert_vacuna')) {
+            //     return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
+            // }
 
             DB::beginTransaction();
             try {
                 $data = Arr::except($this->data, ['data_photo', 'empl_cert_vacuna']);
-                $data['empl_vacuna_validada'] = $request->empl_vacunado ? 1 : 0;
+                $data['empl_vacuna_validada'] = $this->data['empl_cert_vacuna'] ? 1 : 0;
                 $empl = DB::select("select empl_id from empleados where TRIM(UCASE(empl_nombre)) = '" . $data['empl_nombre'] . "'");
                 if (count($empl) > 0)
                     return response()->json($this->ajaxResponse(false, 'Ya existe un trabajador con el nombre proporcionado!'));
@@ -500,9 +501,10 @@ class EmpleadoController extends Controller
 
             return response()->json($this->ajaxResponse(false, 'Errores en el formulario!'));
         } else {
-            if (!$request->hasFile('empl_cert_vacuna')) {
-                return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
-            }
+
+            // if (!$request->hasFile('empl_cert_vacuna')) {
+            //     return response()->json($this->ajaxResponse(false, 'Debe subir la Identificación oficial!'));
+            // }
             DB::beginTransaction();
 
             try {
@@ -511,13 +513,13 @@ class EmpleadoController extends Controller
                 }
 
                 $data = Arr::except($this->data, ['data_photo', 'empl_cert_vacuna']);
-                    if ($request->hasFile('empl_cert_vacuna')) {
-                        if ($empleado->empl_cert_vacuna && Storage::disk('certificados_vacunacion')->exists($empleado->empl_cert_vacuna)) {
-                            Storage::disk('certificados_vacunacion')->delete($empleado->empl_cert_vacuna);
-                        }
-                        $data['empl_cert_vacuna'] = $request->file('empl_cert_vacuna')
-                            ->storeAs('', $empleado->getKey() . "_Empleado." . $request->file('empl_cert_vacuna')->extension(), 'certificados_vacunacion');
+                if ($request->hasFile('empl_cert_vacuna')) {
+                    if ($empleado->empl_cert_vacuna && Storage::disk('certificados_vacunacion')->exists($empleado->empl_cert_vacuna)) {
+                        Storage::disk('certificados_vacunacion')->delete($empleado->empl_cert_vacuna);
                     }
+                    $data['empl_cert_vacuna'] = $request->file('empl_cert_vacuna')
+                        ->storeAs('', $empleado->getKey() . "_Empleado." . $request->file('empl_cert_vacuna')->extension(), 'certificados_vacunacion');
+                }
                 $empleado->update($data);
 
                 // ----------------

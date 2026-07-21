@@ -374,6 +374,29 @@ class ReporteController extends Controller
         return $this->renderIndex($reportes);
     }
 
+    public function indexHess()
+    {
+
+        $reportes =
+            [
+                [
+                    'key' => 'SOL_MANT_VIG',
+                    'url' => url('reportes/solicitudes-mantenimiento-vigentes'),
+                    'nombre' => 'Solicitudes de mantenimiento vigentes',
+                    'fechas' => true,
+                    'estados_ptmp' => false,
+                    'estados_pmant' => true,
+                    'locales' => false,
+                    'do_html' => true,
+                    'do_pdf' => true,
+                    'do_xlsx' => false,
+                ]
+
+            ];
+
+        return $this->renderIndex($reportes);
+    }
+
 
     private function renderIndex($reportes)
     {

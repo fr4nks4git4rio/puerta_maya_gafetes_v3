@@ -50,7 +50,7 @@ class EliminarTarjetaV3
             if ($res['success'] == false) return false;
 
             $this->gafete->getOriginalRecord()->setDisabledAt();
-            $this->gafete->getOriginalRecord()->delete();
+            // $this->gafete->getOriginalRecord()->delete();
 
             return true;
         } catch (\Exception $e) {

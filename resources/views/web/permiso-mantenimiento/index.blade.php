@@ -58,6 +58,7 @@ table tbody td {
             modal_size: 'modal-lg',
             form_url: '{{url('permiso-mantenimiento/form')}}',
             pdf_url: '{{url('permiso-mantenimiento/formato-pdf-firmante')}}',
+            pdf_analisis_riesgo_url: '{{url('permiso-mantenimiento/formato-pdf-analisis-riesgo')}}',
             form_reapply_url: '{{url('permiso-mantenimiento/form-reapply')}}',
             // delete_url: '{{url('permiso-temporal/delete')}}',
 
@@ -84,7 +85,7 @@ table tbody td {
                         dom:$this.modal_dom,
                         title: 'Solicitar Permiso de Mantenimiento',
                         url: $this.form_url,
-                        size: $this.modal_size,
+                        size: 'modal-xl',
                     });
                 });
 
@@ -116,6 +117,11 @@ table tbody td {
                 $(".dataTable").on('click','.btn-pdf', function () {
                     let id = $(this).data('id');
                     $this.doFormatoPDF(id);
+                });
+
+                $(".dataTable").on('click','.btn-pdf-analisis-riesgo', function () {
+                    let id = $(this).data('id');
+                    $this.doFormatoAnalisisRiesgoPDF(id);
                 });
 
 
@@ -182,7 +188,7 @@ table tbody td {
                     dom: $this.modal_dom,
                     title: 'Volver a solicitar Permiso',
                     url: $this.form_reapply_url+'/'+id,
-                    size: $this.modal_size
+                    size: 'modal-xl'
                 });
 
             },
@@ -190,6 +196,12 @@ table tbody td {
             doFormatoPDF: function(id){
                 let $this = this;
                 let url = $this.pdf_url + '/' + id;
+                window.open(url,'_blank')
+            },
+
+            doFormatoAnalisisRiesgoPDF: function(id){
+                let $this = this;
+                let url = $this.pdf_analisis_riesgo_url + '/' + id;
                 window.open(url,'_blank')
             }
 

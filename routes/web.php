@@ -34,11 +34,17 @@ use App\Local;
 use App\Puerta;
 use App\Services\ControladoraAccesoService;
 use App\SolicitudGafete;
+use App\SolicitudGafeteReasignar;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+
+Route::get('/convertir_numero_wiegand', function () {
+    echo convert_serial_to_wiegand(7557329);
+});
 
 Route::get('/arreglas_facturas', function () {
     set_time_limit(6000);
@@ -483,6 +489,96 @@ Route::group(['prefix' => '/cat-acceso', 'middleware' => ['role:ADMINISTRADOR']]
     Route::post('/delete/{acceso}', 'CatAccesoController@delete');
 });
 
+Route::group(['prefix' => '/tipos-mantenimiento', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'TipoMantenimientoController@index');
+
+    Route::post('/form/{tipoMantenimiento?}', 'TipoMantenimientoController@form');
+    Route::post('/insert', 'TipoMantenimientoController@insert');
+    Route::post('/edit/{tipoMantenimiento}', 'TipoMantenimientoController@edit');
+    Route::post('/delete/{tipoMantenimiento}', 'TipoMantenimientoController@delete');
+});
+
+Route::group(['prefix' => '/epp-basicos', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'EppBasicoController@index');
+
+    Route::post('/form/{eppBasico?}', 'EppBasicoController@form');
+    Route::post('/insert', 'EppBasicoController@insert');
+    Route::post('/edit/{eppBasico}', 'EppBasicoController@edit');
+    Route::post('/delete/{eppBasico}', 'EppBasicoController@delete');
+});
+
+Route::group(['prefix' => '/epp-especificos', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'EppEspecificoController@index');
+
+    Route::post('/form/{eppEspecifico?}', 'EppEspecificoController@form');
+    Route::post('/insert', 'EppEspecificoController@insert');
+    Route::post('/edit/{eppEspecifico}', 'EppEspecificoController@edit');
+    Route::post('/delete/{eppEspecifico}', 'EppEspecificoController@delete');
+});
+
+Route::group(['prefix' => '/tipos-riesgo', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'TipoRiesgoController@index');
+
+    Route::post('/form/{tipoRiesgo?}', 'TipoRiesgoController@form');
+    Route::post('/insert', 'TipoRiesgoController@insert');
+    Route::post('/edit/{tipoRiesgo}', 'TipoRiesgoController@edit');
+    Route::post('/delete/{tipoRiesgo}', 'TipoRiesgoController@delete');
+});
+
+Route::group(['prefix' => '/trabajos-especificos', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'TrabajoEspecificoController@index');
+
+    Route::post('/form/{trabajoEspecifico?}', 'TrabajoEspecificoController@form');
+    Route::post('/insert', 'TrabajoEspecificoController@insert');
+    Route::post('/edit/{trabajoEspecifico}', 'TrabajoEspecificoController@edit');
+    Route::post('/delete/{trabajoEspecifico}', 'TrabajoEspecificoController@delete');
+});
+
+Route::group(['prefix' => '/actividades-alto-riesgo', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'ActividadAltoRiesgoController@index');
+
+    Route::post('/form/{actividadAltoRiesgo?}', 'ActividadAltoRiesgoController@form');
+    Route::post('/insert', 'ActividadAltoRiesgoController@insert');
+    Route::post('/edit/{actividadAltoRiesgo}', 'ActividadAltoRiesgoController@edit');
+    Route::post('/delete/{actividadAltoRiesgo}', 'ActividadAltoRiesgoController@delete');
+});
+
+Route::group(['prefix' => '/riesgos-asociados', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'RiesgoAsociadoController@index');
+
+    Route::post('/form/{riesgoAsociado?}', 'RiesgoAsociadoController@form');
+    Route::post('/insert', 'RiesgoAsociadoController@insert');
+    Route::post('/edit/{riesgoAsociado}', 'RiesgoAsociadoController@edit');
+    Route::post('/delete/{riesgoAsociado}', 'RiesgoAsociadoController@delete');
+});
+
+Route::group(['prefix' => '/medidas-control-riesgo', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'MedidaControlRiesgoController@index');
+
+    Route::post('/form/{medidaControlRiesgo?}', 'MedidaControlRiesgoController@form');
+    Route::post('/insert', 'MedidaControlRiesgoController@insert');
+    Route::post('/edit/{medidaControlRiesgo}', 'MedidaControlRiesgoController@edit');
+    Route::post('/delete/{medidaControlRiesgo}', 'MedidaControlRiesgoController@delete');
+});
+
+Route::group(['prefix' => '/equipos-herramientas', 'middleware' => ['role:ADMINISTRADOR']], function () {
+
+    Route::get('/', 'EquipoHerramientaController@index');
+
+    Route::post('/form/{equipoHerramienta?}', 'EquipoHerramientaController@form');
+    Route::post('/insert', 'EquipoHerramientaController@insert');
+    Route::post('/edit/{equipoHerramienta}', 'EquipoHerramientaController@edit');
+    Route::post('/delete/{equipoHerramienta}', 'EquipoHerramientaController@delete');
+});
+
 Route::group(['prefix' => '/empleado'], function () {
 
     Route::get('/', 'EmpleadoController@index')->middleware(['role:LOCATARIO']);
@@ -543,7 +639,7 @@ Route::group(['prefix' => '/solicitud-gafete-reasignar'], function () {
     Route::post('/form/{empleado}', 'SolicitudGafeteReasignarController@form')->middleware(['role:LOCATARIO']);
     Route::post('/insert', 'SolicitudGafeteReasignarController@insert')->middleware(['role:LOCATARIO']);
     Route::post('/update/{solicitud}', 'SolicitudGafeteReasignarController@update')->middleware(['role:LOCATARIO']);
-    Route::delete('/delete/{solicitud}', 'SolicitudGafeteReasignarController@delete')->middleware(['role:LOCATARIO']);
+    Route::post('/delete/{solicitud}', 'SolicitudGafeteReasignarController@delete')->middleware(['role:LOCATARIO']);
     Route::post('/form-validar/{solicitud}', 'SolicitudGafeteReasignarController@formValidar')->middleware(['role:RECEPCIÓN']);
     Route::post('/do-validar/{solicitud}', 'SolicitudGafeteReasignarController@doValidar')->middleware(['role:RECEPCIÓN']);
     Route::post('/form-rechazar/{solicitud}', 'SolicitudGafeteReasignarController@formRechazar')->middleware(['role:RECEPCIÓN']);
@@ -670,6 +766,7 @@ Route::group(['prefix' => '/permiso-mantenimiento'], function () {
     Route::get('/', 'PermisoMantenimientoController@index')->middleware(['role:LOCATARIO']);
     Route::get('/recepcion', 'PermisoMantenimientoController@indexRecepcion')->middleware(['role:RECEPCIÓN']);
     Route::get('/mantenimiento', 'PermisoMantenimientoController@indexMantenimiento')->middleware(['role:MANTENIMIENTO']);
+    Route::get('/hess', 'PermisoMantenimientoController@indexHess')->middleware(['role:HESS']);
 
     Route::post('/detalles/{permiso}', 'PermisoMantenimientoController@detallesView')->middleware(['role:RECEPCIÓN|MANTENIMIENTO']);
     Route::post('/form/{permiso?}', 'PermisoMantenimientoController@form')->middleware(['role:LOCATARIO']);
@@ -678,13 +775,16 @@ Route::group(['prefix' => '/permiso-mantenimiento'], function () {
     Route::post('/form-reapply/{permiso}', 'PermisoMantenimientoController@formReapply')->middleware(['role:LOCATARIO']);
     Route::post('/reapply/{permiso}', 'PermisoMantenimientoController@reapply')->middleware(['role:LOCATARIO']);;
 
-    Route::post('/form-aprobar/{permiso}', 'PermisoMantenimientoController@aprobarView')->middleware(['role:MANTENIMIENTO']);
+    Route::post('/form-aprobar-mantenimiento/{permiso}', 'PermisoMantenimientoController@aprobarViewMantenimiento')->middleware(['role:MANTENIMIENTO']);
+    Route::post('/form-aprobar-hess/{permiso}', 'PermisoMantenimientoController@aprobarViewHess')->middleware(['role:MANTENIMIENTO']);
     Route::post('/form-rechazar/{permiso}', 'PermisoMantenimientoController@rechazarView')->middleware(['role:MANTENIMIENTO']);
 
-    Route::post('/do-aprobar/{permiso}', 'PermisoMantenimientoController@aprobar')->middleware(['role:MANTENIMIENTO']);
+    Route::post('/do-aprobar-mantenimiento/{permiso}', 'PermisoMantenimientoController@aprobarMantenimiento')->middleware(['role:MANTENIMIENTO']);
+    Route::post('/do-aprobar-hess/{permiso}', 'PermisoMantenimientoController@aprobarHess')->middleware(['role:MANTENIMIENTO']);
     Route::post('/do-rechazar/{permiso}', 'PermisoMantenimientoController@rechazar')->middleware(['role:MANTENIMIENTO']);
 
     Route::get('/formato-pdf-firmante/{permiso}', 'PermisoMantenimientoController@formatoPdfFirmante')->middleware(['role:MANTENIMIENTO|SEGURIDAD|LOCATARIO']);
+    Route::get('/formato-pdf-analisis-riesgo/{permiso}', 'PermisoMantenimientoController@formatoPdfAnalisisRiesgo')->middleware(['role:MANTENIMIENTO|SEGURIDAD|LOCATARIO']);
     Route::get('/formato-pdf-simple/{permiso}', 'PermisoMantenimientoController@formatoPdfSimple')->middleware(['role:LOCATARIO']);
 });
 
@@ -759,6 +859,7 @@ Route::group(['prefix' => '/reportes'], function () {
     Route::get('/recepcion', 'ReporteController@indexRecepcion')->middleware(['role:RECEPCIÓN']);
     Route::get('/locatario', 'ReporteController@indexLocatario')->middleware(['role:LOCATARIO']);
     Route::get('/contabilidad', 'ReporteController@indexContabilidad')->middleware(['role:LOCATARIO|CONTABILIDAD']);
+    Route::get('/hess', 'ReporteController@indexHess')->middleware(['role:HESS']);
 
 
     Route::get('/solicitudes-mantenimiento-vigentes', 'ReporteController@solicitudesMantenimientoVigentes')->middleware(['role:MANTENIMIENTO|RECEPCIÓN']);
@@ -781,7 +882,6 @@ Route::group(['prefix' => '/reportes'], function () {
     Route::get('/comprobantes-pago', 'ReporteController@comprobantesPago')->middleware(['role:RECEPCIÓN|CONTABILIDAD']);
 
     Route::get('/saldo-locales', 'ReporteController@saldoLocales')->middleware(['role:RECEPCIÓN|CONTABILIDAD']);
-
 });
 
 Route::group(['prefix' => '/disenno_gafetes'], function () {
@@ -828,5 +928,8 @@ Route::get('/notificaciones', 'NotificationController@index')->name('notificatio
 Route::post('/check_all_notificaciones', 'NotificationController@markAsReadByUser')->name('notifications.check_all');
 Route::post('/check_some_notificaciones', 'NotificationController@markSomeAsReadByUser')->name('notifications.check_some');
 Route::get('/load-data-personal-dentro', 'HomeController@loadDataPersonalDentro')->name('seguridad.load-data-personal-dentro');
+Route::get('/load-trab-esp-by-tipo-mante/{tipoMantenimiento}', 'TrabajoEspecificoController@loadTrabEspByTipoMante');
+Route::get('/get-resumen-trab-esp/{trabajoEspecifico}', 'TrabajoEspecificoController@getResumenTrabEsp');
+
 Route::get('/oauth2/redirect', [GmailOAuthController::class, 'redirect']);
 Route::get('/oauth2/callback', [GmailOAuthController::class, 'callback']);

@@ -1,70 +1,87 @@
-<link rel="stylesheet" type="text/css" href="{{ asset('plugins/croppie/croppie.css') }}"/>
+<link rel="stylesheet" type="text/css" href="{{ asset('plugins/croppie/croppie.css') }}" />
 <div class="container">
 
-    {!! Form::model($permiso,['id' => 'form-permiso','url' =>$url , 'class' => 'form-horizontal']) !!}
+    {!! Form::model($permiso, ['id' => 'form-permiso', 'url' => $url, 'class' => 'form-horizontal']) !!}
 
-    {!! Form::text('ptmp_id',null, ["class" => "form-control d-none", "placeholder"=>""]) !!}
-    {!! Form::text('ptmp_lcal_id',auth()->getUser()->Local->lcal_id, ["class" => "form-control d-none", "placeholder"=>""]) !!}
+    {!! Form::text('ptmp_id', null, ['class' => 'form-control d-none', 'placeholder' => '']) !!}
+    {!! Form::text('ptmp_lcal_id', auth()->getUser()->Local->lcal_id, [
+        'class' => 'form-control d-none',
+        'placeholder' => '',
+    ]) !!}
 
 
     <div class="row">
         <div class="col-md-6">
 
             <div class="form-group row">
-                {!! Form::label('ptmp_fecha', 'Fecha' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_fecha', 'Fecha', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::text('ptmp_fecha', date('Y-m-d') ,["class"=>"form-control", "placeholder" => ""]);!!}
+                    {!! Form::text('ptmp_fecha', date('Y-m-d'), ['class' => 'form-control', 'placeholder' => '']) !!}
                 </div>
             </div>
 
 
             <div class="form-group row">
-                {!! Form::label('ptmp_nombre', 'Nombre *', ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_nombre', 'Nombre *', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::text('ptmp_nombre', null,["class"=>"form-control"]);!!}
+                    {!! Form::text('ptmp_nombre', null, ['class' => 'form-control']) !!}
                 </div>
             </div>
 
             <div class="form-group row">
-                {!! Form::label('ptmp_crgo_id', 'Cargo', ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_crgo_id', 'Cargo', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::select('ptmp_crgo_id', $cargos ,  null , ["class"=>"form-control select2-control",
-                                            "placeholder" => "Cargo", "style" => "width: 100%" ])!!}
+                    {!! Form::select('ptmp_crgo_id', $cargos, null, [
+                        'class' => 'form-control select2-control',
+                        'placeholder' => 'Cargo',
+                        'style' => 'width: 100%',
+                    ]) !!}
                 </div>
             </div>
 
             <div class="form-group row">
-                {!! Form::label('ptmp_correo', 'Correo' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_correo', 'Correo', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::text('ptmp_correo', null,["class"=>"form-control", "placeholder" => ""]);!!}
+                    {!! Form::text('ptmp_correo', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                 </div>
             </div>
 
             <div class="form-group row">
-                {!! Form::label('ptmp_telefono', 'Teléfono' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_telefono', 'Teléfono', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::text('ptmp_telefono', null,["class"=>"form-control", "placeholder" => ""]);!!}
+                    {!! Form::text('ptmp_telefono', null, ['class' => 'form-control', 'placeholder' => '']) !!}
                 </div>
             </div>
 
             <div class="form-group row">
-                {!! Form::label('ptmp_vigencia_inicial', 'Inicio *' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_vigencia_inicial', 'Inicio *', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::date('ptmp_vigencia_inicial', Carbon\Carbon::now()->addDays(1)->format('Y-m-d') ,["class"=>"form-control", 'id' => 'ptmp_vigencia_inicial', "placeholder" => "", "onkeydown"=>"return false"]);!!}
+                    {!! Form::date('ptmp_vigencia_inicial', Carbon\Carbon::now()->addDays(1)->format('Y-m-d'), [
+                        'class' => 'form-control',
+                        'id' => 'ptmp_vigencia_inicial',
+                        'placeholder' => '',
+                        'onkeydown' => 'return false',
+                    ]) !!}
                 </div>
             </div>
 
             <div class="form-group row">
-                {!! Form::label('ptmp_vigencia_final', 'Fin *' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_vigencia_final', 'Fin *', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::date('ptmp_vigencia_final', Carbon\Carbon::now()->addDays(16)->format('Y-m-d') ,["class"=>"form-control", 'id' => 'ptmp_vigencia_final', "placeholder" => "", 'max' => Carbon\Carbon::now()->addDays(16)->format('Y-m-d'), "onkeydown"=>"return false"]);!!}
+                    {!! Form::date('ptmp_vigencia_final', Carbon\Carbon::now()->addDays(16)->format('Y-m-d'), [
+                        'class' => 'form-control',
+                        'id' => 'ptmp_vigencia_final',
+                        'placeholder' => '',
+                        'max' => Carbon\Carbon::now()->addDays(16)->format('Y-m-d'),
+                        'onkeydown' => 'return false',
+                    ]) !!}
                 </div>
             </div>
 
             <div class="form-group row" style="display: none">
                 {!! Form::label('ptmp_vacunado', 'Vacunado', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::checkbox('ptmp_vacunado', null, null,["class"=>"form-control input-sm"]);!!}
+                    {!! Form::checkbox('ptmp_vacunado', null, null, ['class' => 'form-control input-sm']) !!}
                     <br>
                     <small class="text-danger"><span class="fa fa-question-circle"></span>&nbsp;Indique si está
                         completamente vacunado</small>
@@ -72,11 +89,11 @@
             </div>
 
             <div class="row form-group">
-                {!! Form::label('ptmp_cert_vacuna', 'Identificación oficial (2mb máx.)' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_cert_vacuna', 'Identificación oficial (2mb máx.)', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                        <a class="btn btn-primary file-btn w-100">
+                    <a class="btn btn-primary file-btn w-100">
                         {!! Form::file('ptmp_cert_vacuna', ['accept' => 'image/jpeg,image/png,application/pdf']) !!}
-                        </a>
+                    </a>
                     @if (isset($permiso) && $permiso->ptmp_cert_vacuna)
                         <div class="position-relative">
                             <a href="javascript:void;" class="btn btn-primary btn-xs position-absolute"
@@ -92,8 +109,8 @@
             </div>
 
             <div class="row">
-                {!! Form::label('data_photo', 'Fotografía *' , ['class' => 'col-sm-4 control-label']); !!}
-                {{Form::hidden('data_photo',null,['id' => 'data_photo'])}}
+                {!! Form::label('data_photo', 'Fotografía *', ['class' => 'col-sm-4 control-label']) !!}
+                {{ Form::hidden('data_photo', null, ['id' => 'data_photo']) }}
 
                 <a class="btn btn-primary file-btn">
                     <input type="file" id="upload" value="Selecciona una imagen" accept="image/*">
@@ -108,11 +125,11 @@
                 <div class="upload-demo-wrap">
 
 
-                    @if($permiso != null)
-                        <img id="fotografia-container" src="{{ $permiso->ptmp_foto_web  }}" width="300px"/>
+                    @if ($permiso != null)
+                        <img id="fotografia-container" src="{{ $permiso->ptmp_foto_web }}" width="300px" />
                     @else
-                        <img id="fotografia-container" src="{{asset('plugins/croppie/banner_foto.jpg')}}"
-                             width="300px"/>
+                        <img id="fotografia-container" src="{{ asset('plugins/croppie/banner_foto.jpg') }}"
+                            width="300px" />
                     @endif
 
                 </div>
@@ -121,9 +138,9 @@
             <br>
 
             <div class="form-group row">
-                {!! Form::label('ptmp_comentario', 'Comentario' , ['class' => 'col-sm-4 control-label']); !!}
+                {!! Form::label('ptmp_comentario', 'Comentario', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::textarea('ptmp_comentario', null,["class"=>"form-control", "size"=>"50x2"]);!!}
+                    {!! Form::textarea('ptmp_comentario', null, ['class' => 'form-control', 'size' => '50x2']) !!}
                 </div>
             </div>
 
@@ -192,10 +209,9 @@
 
 </div>
 
-<script src="{{asset('/plugins/moment/moment.js')}}"></script>
+<script src="{{ asset('/plugins/moment/moment.js') }}"></script>
 <script type="text/javascript">
-
-    $(document).ready(function () {
+    $(document).ready(function() {
 
         jModal = {
             uploadCrop: null,
@@ -204,10 +220,10 @@
             modal: $('#modal-form'),
             form: '#form-permiso',
 
-            init: function () {
+            init: function() {
                 let $this = this;
 
-                $('#modal-btn-ok', $this.modal).click(function () {
+                $('#modal-btn-ok', $this.modal).click(function() {
                     $this.handleSubmit();
                 });
 
@@ -220,22 +236,22 @@
                 $('#ptmp_fecha').datepicker({
                     autoclose: true,
                     format: 'yyyy-mm-dd',
-                    language: '{{App::getLocale()}}'
+                    language: '{{ App::getLocale() }}'
                 });
 
                 $('#ptmp_vigencia_inicial').datepicker({
                     autoclose: true,
                     format: 'yyyy-mm-dd',
-                    language: '{{App::getLocale()}}'
+                    language: '{{ App::getLocale() }}'
                 });
 
                 $('#ptmp_vigencia_final').datepicker({
                     autoclose: true,
                     format: 'yyyy-mm-dd',
-                    language: '{{App::getLocale()}}'
+                    language: '{{ App::getLocale() }}'
                 });
 
-                $('#ptmp_vigencia_inicial').on('change', function () {
+                $('#ptmp_vigencia_inicial').on('change', function() {
 
                     let inicio = moment($(this).val(), 'YYYY-MM-DD');
 
@@ -250,7 +266,7 @@
 
             },
 
-            initCroppie: function () {
+            initCroppie: function() {
                 let $this = this;
 
                 $($this.cropSelector).croppie('destroy');
@@ -267,23 +283,23 @@
                     }
                 });
 
-                $('input#upload').off().on('change', function () {
+                $('input#upload').off().on('change', function() {
                     console.log('Se elijio un archivo');
                     $this.readFile(this);
                 });
             },
 
-            readFile: function (input) {
+            readFile: function(input) {
                 let $this = this;
 
                 if (input.files && input.files[0]) {
                     var reader = new FileReader();
 
-                    reader.onload = function (e) {
+                    reader.onload = function(e) {
                         $($this.cropSelector).addClass('ready');
                         $this.uploadCrop.croppie('bind', {
                             url: e.target.result
-                        }).then(function () {
+                        }).then(function() {
                             $this.hasNewImage = true;
                             console.log('jQuery bind complete');
                         });
@@ -298,7 +314,7 @@
             },
 
 
-            handleSubmit: function () {
+            handleSubmit: function() {
 
                 let $this = this;
 
@@ -312,7 +328,7 @@
                             height: 660
                         },
                         quality: .9
-                    }).then(function (resp) {
+                    }).then(function(resp) {
                         $('#data_photo').val(resp);
                         console.log('Preparado para enviar form');
                         $this.doSendForm();
@@ -326,7 +342,7 @@
 
             },
 
-            doSendForm: function () {
+            doSendForm: function() {
 
                 let $this = this;
                 let url = $($this.form).attr('action');
@@ -335,15 +351,15 @@
                 $.ajax({
                     url: url,
                     method: 'POST',
-//                   data: $($this.form).serialize(),
+                    //                   data: $($this.form).serialize(),
                     data: new FormData(form),
                     contentType: false,
                     cache: false,
                     processData: false,
-                    beforeSend: function () {
+                    beforeSend: function() {
                         $('.input-error').remove();
                     },
-                    success: function (res) {
+                    success: function(res) {
 
                         if (res.success === true) {
                             APAlerts.success(res.message);
@@ -367,13 +383,12 @@
         };
 
         loadScript('{{ asset('plugins/croppie/croppie.min.js') }}',
-                {{--loadScript('{{ asset('plugins/moment/min/moment.min.js') }}',--}}
-                function () {
-                    jModal.init();
-                }
-//            );
+            {{-- loadScript('{{ asset('plugins/moment/min/moment.min.js') }}', --}}
+            function() {
+                jModal.init();
+            }
+            //            );
         );
 
     });
-
 </script>

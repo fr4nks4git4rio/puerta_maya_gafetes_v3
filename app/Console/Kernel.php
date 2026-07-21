@@ -114,11 +114,10 @@ class Kernel extends ConsoleKernel
                         $gafeteRfid = $gafete->getVGafeteRfidV3();
 
 
-                        $gafete->Puertas()->detach($gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->pluck('door_id'));
+                        $gafete->Puertas()->detach($gafete->Puertas()->where('door_tipo', '!=', 'PEATONAL')->pluck('door_id')->toArray());
 
                         $gafete->sgft_permisos = 'PEATONAL';
                         $gafete->save();
-
 
                         $controladora = Controladora::find($gafeteRfid->controladora_id);
 
@@ -127,6 +126,7 @@ class Kernel extends ConsoleKernel
                         if ($res == false) {
                             DB::rollBack();
                             Log::error("Ocurrió un error al cambiar los permisos de la tarjeta $gafeteRfid->numero_rfid en la controladora $controladora->ctrl_nombre.");
+                            continue;
                         }
                     }
                     $solicitud->sgftre_estado = 'DESACTIVADO';

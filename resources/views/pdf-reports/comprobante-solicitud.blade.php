@@ -32,7 +32,8 @@
                 <small>COMPROBANTE DE SOLICITUD DE GAFETE DE ACCESO</small>
             </div>
             <br>
-            <span class="report-caption">GENERADO: {{date('Y-m-d H:i:s')}}</span>
+            <span class="report-caption">Fecha de solicitud: {{$solicitud->sgft_created_at}}</span><br>
+            <span class="report-caption">Fecha de vencimiento: {{Illuminate\Support\Carbon::parse($solicitud->sgft_created_at)->addDays(5)->format('Y-m-d H:i:s')}}</span>
 
 
         </div>

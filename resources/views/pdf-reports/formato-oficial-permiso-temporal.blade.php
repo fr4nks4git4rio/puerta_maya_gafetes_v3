@@ -109,7 +109,7 @@
                 <tr>
                     <td><b>Visita con carácter de</b></td>
                     <td class="text-center">
-                        CONTRATISTA <i class="fa fa-square-o"></i> &nbsp;&nbsp;&nbsp;
+                        NUEVO EMPLEADO <i class="fa fa-square-o"></i> &nbsp;&nbsp;&nbsp;
                         PROVEEDOR <i class="fa fa-square-o"></i> &nbsp;&nbsp;&nbsp;
                         COBRATARIO <i class="fa fa-square-o"></i> &nbsp;&nbsp;&nbsp;
                         TECNICO <i class="fa fa-square-o"></i> &nbsp;&nbsp;&nbsp;
@@ -117,7 +117,7 @@
                         OTRO(COMENTAR) <i class="fa fa-square-o"></i>
                     </td>
                 </tr>
-                <tr>
+                {{-- <tr>
                     <td><b>Objeto</b></td>
                     <td class="text-center">
                         CARRETA <i class="fa fa-square-o"></i> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -127,7 +127,7 @@
 
                         OTRO(COMENTAR) <i class="fa fa-square-o"></i>
                     </td>
-                </tr>
+                </tr> --}}
             </table>
         </div>
     </div>
@@ -183,7 +183,7 @@
         <div class="col-sm-12">
             <p class="text-justify" style="font-size: 10px">
                 <br>
-                EL VISITANTE ACEPTA INRESAR BAJO SU PROPIA RESPONSABLIDAD Y RIESGO, Y LIBERAR A PUERTA MAYA DE CUALQUIER RESPONSABILIDAD DE CARÁCTER LABORAL, PENAL Y CIVIL, Y ASIMISMO SE COMPROMETE A RESPETAR LAS NORMAS Y DISPOSICIONES DE SEGURIDAD DE LA EMPRESA DURANTE SU ESTANCIA PORTANDO EN TODO MOMENTO EL GAFETE DE IDENTIFICACIÓN PROPORCIONADA POR LA MISMA.
+                EL VISITANTE ACEPTA INGRESAR BAJO SU PROPIA RESPONSABLIDAD Y RIESGO, Y LIBERAR A PUERTA MAYA DE CUALQUIER RESPONSABILIDAD DE CARÁCTER LABORAL, PENAL Y CIVIL, Y ASIMISMO SE COMPROMETE A RESPETAR LAS NORMAS Y DISPOSICIONES DE SEGURIDAD DE LA EMPRESA DURANTE SU ESTANCIA PORTANDO EN TODO MOMENTO EL GAFETE DE IDENTIFICACIÓN PROPORCIONADA POR LA MISMA.
             </p>
         </div>
     </div>
@@ -214,7 +214,7 @@
                     </td>
 
                     <td class="text-center">
-                        <p><b>SUPERVISO</b></p>
+                        <p><b>SUPERVISÓ</b></p>
                         <br>
                         <br>
                         <br>

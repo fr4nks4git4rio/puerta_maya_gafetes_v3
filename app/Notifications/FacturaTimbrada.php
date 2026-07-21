@@ -70,7 +70,7 @@ class FacturaTimbrada extends Notification
             ->subject($this->subject)
             ->greeting('Puerta Maya Sistema de Gafetes y Acceso.')
             ->line($this->body)
-//            ->line('Por este medio tenemos la atención de informarle que su comprobante ha sido timbrado.')
+            //            ->line('Por este medio tenemos la atención de informarle que su comprobante ha sido timbrado.')
             ->line('Se adjunta XML y PDF correspondientes');
         if ($this->factura->fact_xml_path) {
             $email->attach($this->factura->fact_xml_path, [
@@ -108,19 +108,19 @@ class FacturaTimbrada extends Notification
      * @param  mixed $notifiable
      * @return array
      */
-//    public function toArray($notifiable)
-//    {
-//        return [
-////            'ptmp_id' => $this->permisoTemporal->ptmp_id,
-////            'nombre'  => $this->permisoTemporal->ptmp_nombre,
-////            'inicio'  => $this->permisoTemporal->ptmp_vigencia_inicial,
-////            'fin'     => $this->permisoTemporal->ptmp_vigencia_final,
-//            'icono'   => "ti-check-box text-succes",
-//            'titulo'  => 'Comprobante de Pago Validado',
-//            'texto'   => '<b>Comprobante: </b><br/>'.
-//                         'Folio Bancario: ' .  $this->comprobante->cpag_folio_bancario . '<br/>'.
-//                         'Se han añadido: $'. number_format($this->comprobante->cpag_importe_pagado,2) . ' al saldo del local.',
-////            'url'     => ""
-//        ];
-//    }
+    //    public function toArray($notifiable)
+    //    {
+    //        return [
+    ////            'ptmp_id' => $this->permisoTemporal->ptmp_id,
+    ////            'nombre'  => $this->permisoTemporal->ptmp_nombre,
+    ////            'inicio'  => $this->permisoTemporal->ptmp_vigencia_inicial,
+    ////            'fin'     => $this->permisoTemporal->ptmp_vigencia_final,
+    //            'icono'   => "ti-check-box text-succes",
+    //            'titulo'  => 'Comprobante de Pago Validado',
+    //            'texto'   => '<b>Comprobante: </b><br/>'.
+    //                         'Folio Bancario: ' .  $this->comprobante->cpag_folio_bancario . '<br/>'.
+    //                         'Se han añadido: $'. number_format($this->comprobante->cpag_importe_pagado,2) . ' al saldo del local.',
+    ////            'url'     => ""
+    //        ];
+    //    }
 }

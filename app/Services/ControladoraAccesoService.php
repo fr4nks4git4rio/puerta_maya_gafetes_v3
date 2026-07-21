@@ -37,7 +37,7 @@ class ControladoraAccesoService
                 'digest'
             ],
             'timeout' => 5,
-            'verify' => false//config('app.env') == 'production'
+            'verify' => false //config('app.env') == 'production'
         ]);
     }
 

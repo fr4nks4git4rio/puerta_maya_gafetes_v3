@@ -64,27 +64,24 @@ class PermisoMantenimiento extends Model
 
         if ($value == 'APROBADO') {
             $hoy = \Carbon\Carbon::today();
-            $final = \Carbon\Carbon::createFromFormat('Y-m-d', $this->pmtt_vigencia_final);
+            $final = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $this->pmtt_vigencia_final);
 
             if ($hoy->gt($final)) {
                 return 'VENCIDO';
             }
-
         }
 
 
         return $value;
-
-
     }
 
     public function toStringQr()
     {
-//        $local = $this->Local->lcal_nombre_comercial;
-//        $fecha = Carbon::createFromFormat("Y-m-d H:i:s", $this->pmtt_fecha)->format('d/m/Y');
-//        $vigente_desde = Carbon::createFromFormat("Y-m-d", $this->pmtt_vigencia_inicial)->format('d/m/Y');
-//        $vigente_hasta = Carbon::createFromFormat("Y-m-d", $this->pmtt_vigencia_final)->format('d/m/Y');
-//        return Request::root()."/permiso-mantenimiento/formato-pdf-firmante/$this->pmtt_id";
+        //        $local = $this->Local->lcal_nombre_comercial;
+        //        $fecha = Carbon::createFromFormat("Y-m-d H:i:s", $this->pmtt_fecha)->format('d/m/Y');
+        //        $vigente_desde = Carbon::createFromFormat("Y-m-d", $this->pmtt_vigencia_inicial)->format('d/m/Y');
+        //        $vigente_hasta = Carbon::createFromFormat("Y-m-d", $this->pmtt_vigencia_final)->format('d/m/Y');
+        //        return Request::root()."/permiso-mantenimiento/formato-pdf-firmante/$this->pmtt_id";
         return "PM-$this->pmtt_id";
     }
 
@@ -98,10 +95,42 @@ class PermisoMantenimiento extends Model
         return $this->belongsTo('App\Local', 'pmtt_lcal_id');
     }
 
-    public function AprobadoPor()
+    public function MantenimientoAprobadoPor()
     {
-        return $this->belongsTo('App\User', 'pmtt_approved_by');
+        return $this->belongsTo('App\User', 'pmtt_mtt_approved_by');
+    }
+    public function HessAprobadoPor()
+    {
+        return $this->belongsTo('App\User', 'pmtt_hess_approved_by');
     }
 
+    public function TipoMantenimiento()
+    {
+        return $this->belongsTo('App\TipoMantenimiento', 'pmtt_tmtt_id');
+    }
+    public function TrabajoEspecifico()
+    {
+        return $this->belongsTo('App\TrabajoEspecifico', 'pmtt_tesp_id');
+    }
 
+    public function Trabajadores()
+    {
+        return $this->hasMany('App\PermisoMantenimientoTrabajador', 'pmtb_pmtt_id');
+    }
+    public function ActividadesAltoRiesgo()
+    {
+        return $this->belongsToMany('App\ActividadAltoRiesgo', 'permisos_mant_acts_alto_riesgo', 'pmtt_id', 'actar_id');
+    }
+    public function RiesgosAsociados()
+    {
+        return $this->belongsToMany('App\RiesgoAsociado', 'permisos_mant_riesgos_asociados', 'pmtt_id', 'rasoc_id');
+    }
+    public function MedidasControlRiesgo()
+    {
+        return $this->belongsToMany('App\MedidaControlRiesgo', 'permisos_mant_meds_cont_riesgo', 'pmtt_id', 'medcr_id');
+    }
+    public function EquiposHerramientas()
+    {
+        return $this->belongsToMany('App\EquipoHerramienta', 'permisos_mant_eqs_hers', 'pmtt_id', 'eqher_id');
+    }
 }

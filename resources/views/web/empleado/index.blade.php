@@ -250,7 +250,7 @@ table tbody td {
 
                             $.ajax({
                                 url: $this.quitar_permisos_estacionamiento_url + '/' + data.sgftre_id,
-                                method: 'DELETE',
+                                method: 'POST',
                                 success: function(res) {
                                     if (res.success === true) {
                                         APAlerts.success(res.message);
