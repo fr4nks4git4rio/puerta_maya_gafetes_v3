@@ -84,10 +84,10 @@
 
                 <tr>
                     <td>
-                        <b>Tipo de Mantenimiento: </b> {{ $permiso->TipoMantenimiento->tmtt_nombre }}
+                        <b>Tipo de Mantenimiento: </b> {{ optional($permiso->TipoMantenimiento)->tmtt_nombre }}
                     </td>
                     <td>
-                        <b>Trabajo Específico: </b> {{ $permiso->TrabajoEspecifico->tesp_nombre }}
+                        <b>Trabajo Específico: </b> {{ optional($permiso->TrabajoEspecifico)->tesp_nombre }}
                     </td>
                 </tr>
 
@@ -102,16 +102,18 @@
                         <b>Listado de EPP:</b><br>
                         <table class="table table-striped table-sm table-condensed m-t-10">
                             <tbody>
-                                @foreach ($permiso->TrabajoEspecifico->EppBasicos as $eppBasico)
-                                    <tr>
-                                        <td>{{ $eppBasico->eppb_nombre }}</td>
-                                    </tr>
-                                @endforeach
-                                @foreach ($permiso->TrabajoEspecifico->EppEspecificos as $eppEspecifico)
-                                    <tr>
-                                        <td>{{ $eppBasico->eppe_nombre }}</td>
-                                    </tr>
-                                @endforeach
+                                @if ($permiso->TrabajoEspecifico)
+                                    @foreach ($permiso->TrabajoEspecifico->EppBasicos as $eppBasico)
+                                        <tr>
+                                            <td>{{ $eppBasico->eppb_nombre }}</td>
+                                        </tr>
+                                    @endforeach
+                                    @foreach ($permiso->TrabajoEspecifico->EppEspecificos as $eppEspecifico)
+                                        <tr>
+                                            <td>{{ $eppBasico->eppe_nombre }}</td>
+                                        </tr>
+                                    @endforeach
+                                @endif
                             </tbody>
                         </table>
                     </td>
@@ -158,8 +160,8 @@
 
             <p style="text-align: justify">
                 <!-- <small class="text-justify">
-        Por este conducto hago saber y deslindo de toda responsabilidad civil, laboral y penal a la empresa Cozumel Cruise Terminal S.A de C.V. y a sus representantes legales, derivado de cualquier accidente de los trabajos que se realicen dentro de sus instalaciones, trabajos a realizar por el personal de la empresa ( <b>{{ $permiso->pmtt_empresa }}</b> ) Representada por <b>{{ $permiso->pmtt_representante }}</b> hago constar que los empleados de <b>{{ $permiso->pmtt_empresa }}</b> están capacitados y tienen experiencia para realizar las actividades encomendadas a si mismo tienen el conocimiento de conocer y tomar las medidas de seguridad necesarias para desempeñar su trabajo y cuidar de su personal, así como también como de las personas que los ayudan a realizar los trabajos para los cuales fueron contratados.<br> Además confirmo conocer, seguir y estar de acuerdo en los derechos y obligaciones estipuladas en las normas de seguridad para contratistas de la empresa  <b>{{ $permiso->pmtt_empresa }}</b>
-                        </small> -->
+            Por este conducto hago saber y deslindo de toda responsabilidad civil, laboral y penal a la empresa Cozumel Cruise Terminal S.A de C.V. y a sus representantes legales, derivado de cualquier accidente de los trabajos que se realicen dentro de sus instalaciones, trabajos a realizar por el personal de la empresa ( <b>{{ $permiso->pmtt_empresa }}</b> ) Representada por <b>{{ $permiso->pmtt_representante }}</b> hago constar que los empleados de <b>{{ $permiso->pmtt_empresa }}</b> están capacitados y tienen experiencia para realizar las actividades encomendadas a si mismo tienen el conocimiento de conocer y tomar las medidas de seguridad necesarias para desempeñar su trabajo y cuidar de su personal, así como también como de las personas que los ayudan a realizar los trabajos para los cuales fueron contratados.<br> Además confirmo conocer, seguir y estar de acuerdo en los derechos y obligaciones estipuladas en las normas de seguridad para contratistas de la empresa  <b>{{ $permiso->pmtt_empresa }}</b>
+                            </small> -->
             <p class="text-justify" style="line-height: 1.2; font-size: 14px;">
                 Por este conducto hago saber y deslindo de toda responsabilidad civil, laboral y penal a la empresa Cozumel
                 Cruise Terminal S.A de C.V.

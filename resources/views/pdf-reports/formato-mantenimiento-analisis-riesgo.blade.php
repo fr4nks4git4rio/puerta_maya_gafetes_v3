@@ -91,7 +91,7 @@
                 </tr>
                 <tr>
                     <td colspan="2" class="p-0">
-                        {{ 'DESCRIPCION BREVE DE LA ACTIVIDAD A DESARROLLAR: ' . $permiso->TrabajoEspecifico->tesp_nombre }}
+                        {{ 'DESCRIPCION BREVE DE LA ACTIVIDAD A DESARROLLAR: ' . optional($permiso->TrabajoEspecifico)->tesp_nombre }}
                     </td>
                 </tr>
             </table>
