@@ -95,16 +95,16 @@ class TrabajoEspecificoController extends Controller
             )
                 ->filterColumn('tesp_epp_basicos', function ($query, $keyword) {
                     // por ejemplo, si en realidad viene de otra tabla/relación:
-                    $query->whereRaw("eppb.eppb_nombre like ?", [$keyword]); // o la lógica real de búsqueda
+                    $query->whereRaw("eppb.eppb_nombre like ?", ["%$keyword%"]); // o la lógica real de búsqueda
                 })
                 ->filterColumn('tesp_epp_especificos', function ($query, $keyword) {
-                    $query->whereRaw("eppe.eppe_nombre like ?", [$keyword]);
+                    $query->whereRaw("eppe.eppe_nombre like ?", ["%$keyword%"]);
                 })
                 ->filterColumn('tmtt_nombre', function ($query, $keyword) {
-                    $query->whereRaw("tmtt.tmtt_nombre like ?", [$keyword]);
+                    $query->whereRaw("tmtt.tmtt_nombre like ?", ["%$keyword%"]);
                 })
                 ->filterColumn('trgo_nombre', function ($query, $keyword) {
-                    $query->whereRaw("trgo.trgo_nombre like ?", [$keyword]);
+                    $query->whereRaw("trgo.trgo_nombre like ?", ["%$keyword%"]);
                 })
                 ->make(true);
         }
