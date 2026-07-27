@@ -75,29 +75,37 @@ class TrabajoEspecificoController extends Controller
                 TrabajoEspecifico::select([
                     'tesp_id',
                     'tesp_nombre',
-                    DB::raw("'' as tesp_epp_basicos"),
-                    DB::raw("'' as tesp_epp_especificos"),
+                    DB::raw("GROUP_CONCAT(DISTINCT eppb.eppb_nombre SEPARATOR ', ') as tesp_epp_basicos"),
+                    DB::raw("GROUP_CONCAT(DISTINCT eppe.eppe_nombre SEPARATOR ', ') as tesp_epp_especificos"),
                     'tmtt.tmtt_nombre',
                     'trgo.trgo_nombre',
                     'tesp_comentarios'
                 ])
                     ->leftJoin('tipos_mantenimiento as tmtt', 'tmtt.tmtt_id', '=', 'tesp_tmtt_id')
                     ->leftJoin('tipos_riesgo as trgo', 'trgo.trgo_id', '=', 'tesp_trgo_id')
+
+                    ->leftJoin('trab_esp_epp_basicos', 'tesp_id', 'teeb_tesp_id')
+                    ->leftJoin('epp_basicos as eppb', 'eppb.eppb_id', 'teeb_eppb_id')
+
+                    ->leftJoin('trab_esp_epp_especificos', 'tesp_id', 'teee_tesp_id')
+                    ->leftJoin('epp_especificos as eppe', 'eppe.eppe_id', 'teee_eppe_id')
+
+                    ->groupBy('tesp_id')
                     ->orderBy('tesp_nombre')
             )
-                ->editColumn('tesp_epp_basicos', function (TrabajoEspecifico $model) {
-                    return join(', ', $model->EppBasicos()->get()->map(function ($element) {
-                        return $element->eppb_nombre;
-                    })->toArray());
+                ->filterColumn('tesp_epp_basicos', function ($query, $keyword) {
+                    // por ejemplo, si en realidad viene de otra tabla/relación:
+                    $query->whereRaw("eppb.eppb_nombre like ?", [$keyword]); // o la lógica real de búsqueda
                 })
-                ->editColumn('tesp_epp_especificos', function (TrabajoEspecifico $model) {
-                    return $model->EppEspecificos()->exists()
-                        ? join(', ', $model->EppEspecificos()->get()->map(function ($element) {
-                            return $element->eppe_nombre;
-                        })->toArray())
-                        : 'N/A';
+                ->filterColumn('tesp_epp_especificos', function ($query, $keyword) {
+                    $query->whereRaw("eppe.eppe_nombre like ?", [$keyword]);
                 })
-                ->rawColumns(['tesp_epp_basicos', 'tesp_epp_especificos'])
+                ->filterColumn('tmtt_nombre', function ($query, $keyword) {
+                    $query->whereRaw("tmtt.tmtt_nombre like ?", [$keyword]);
+                })
+                ->filterColumn('trgo_nombre', function ($query, $keyword) {
+                    $query->whereRaw("trgo.trgo_nombre like ?", [$keyword]);
+                })
                 ->make(true);
         }
 
