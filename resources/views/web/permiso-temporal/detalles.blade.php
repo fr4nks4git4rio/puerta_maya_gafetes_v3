@@ -51,11 +51,15 @@
             @if ($permiso->ptmp_cert_vacuna != '')
         <dt class="col-sm-3">Identificación oficial</dt>
         <dd class="col-sm-9">
-            <a href="/certificados_vacunacion/{{ $permiso->ptmp_cert_vacuna }}?{{ now() }}" target="_blank">
-                <img class="img-thumbnail"
-                    src="/certificados_vacunacion/{{ $permiso->ptmp_cert_vacuna }}?{{ now() }}"
-                    alt="">
-            </a>
+            <div class="position-relative">
+                <a href="javascript:void;" class="btn btn-primary btn-xs position-absolute"
+                    style="left: 10px; top: 10px" id="zoom_frame"
+                    onclick="document.getElementById('frame_certificado').requestFullscreen()"><i
+                        class="fa fa-search-plus"></i></a>
+                <iframe height="200" allow="fullscreen" id="frame_certificado" style="width: stretch"
+                    src="/certificados_vacunacion/{{ $permiso->ptmp_cert_vacuna }}?{{ now() }}">
+                </iframe>
+            </div>
             </dt>
             @endif
     </dl>
