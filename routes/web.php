@@ -768,7 +768,7 @@ Route::group(['prefix' => '/permiso-mantenimiento'], function () {
     Route::get('/mantenimiento', 'PermisoMantenimientoController@indexMantenimiento')->middleware(['role:MANTENIMIENTO']);
     Route::get('/hess', 'PermisoMantenimientoController@indexHess')->middleware(['role:HESS']);
 
-    Route::post('/detalles/{permiso}', 'PermisoMantenimientoController@detallesView')->middleware(['role:RECEPCIÓN|MANTENIMIENTO']);
+    Route::post('/detalles/{permiso}', 'PermisoMantenimientoController@detallesView')->middleware(['role:RECEPCIÓN|MANTENIMIENTO|HESS']);
     Route::post('/form/{permiso?}', 'PermisoMantenimientoController@form')->middleware(['role:LOCATARIO']);
     Route::post('/insert', 'PermisoMantenimientoController@insert')->middleware(['role:LOCATARIO']);
 
@@ -776,16 +776,16 @@ Route::group(['prefix' => '/permiso-mantenimiento'], function () {
     Route::post('/reapply/{permiso}', 'PermisoMantenimientoController@reapply')->middleware(['role:LOCATARIO']);;
 
     Route::post('/form-aprobar-mantenimiento/{permiso}', 'PermisoMantenimientoController@aprobarViewMantenimiento')->middleware(['role:MANTENIMIENTO']);
-    Route::post('/form-aprobar-hess/{permiso}', 'PermisoMantenimientoController@aprobarViewHess')->middleware(['role:MANTENIMIENTO']);
-    Route::post('/form-rechazar/{permiso}', 'PermisoMantenimientoController@rechazarView')->middleware(['role:MANTENIMIENTO']);
+    Route::post('/form-aprobar-hess/{permiso}', 'PermisoMantenimientoController@aprobarViewHess')->middleware(['role:HESS']);
+    Route::post('/form-rechazar/{permiso}', 'PermisoMantenimientoController@rechazarView')->middleware(['role:MANTENIMIENTO|HESS']);
 
     Route::post('/do-aprobar-mantenimiento/{permiso}', 'PermisoMantenimientoController@aprobarMantenimiento')->middleware(['role:MANTENIMIENTO']);
-    Route::post('/do-aprobar-hess/{permiso}', 'PermisoMantenimientoController@aprobarHess')->middleware(['role:MANTENIMIENTO']);
-    Route::post('/do-rechazar/{permiso}', 'PermisoMantenimientoController@rechazar')->middleware(['role:MANTENIMIENTO']);
+    Route::post('/do-aprobar-hess/{permiso}', 'PermisoMantenimientoController@aprobarHess')->middleware(['role:HESS']);
+    Route::post('/do-rechazar/{permiso}', 'PermisoMantenimientoController@rechazar')->middleware(['role:MANTENIMIENTO|HESS']);
 
-    Route::get('/formato-pdf-firmante/{permiso}', 'PermisoMantenimientoController@formatoPdfFirmante')->middleware(['role:MANTENIMIENTO|SEGURIDAD|LOCATARIO']);
-    Route::get('/formato-pdf-analisis-riesgo/{permiso}', 'PermisoMantenimientoController@formatoPdfAnalisisRiesgo')->middleware(['role:MANTENIMIENTO|SEGURIDAD|LOCATARIO']);
-    Route::get('/formato-pdf-simple/{permiso}', 'PermisoMantenimientoController@formatoPdfSimple')->middleware(['role:LOCATARIO']);
+    Route::get('/formato-pdf-firmante/{permiso}', 'PermisoMantenimientoController@formatoPdfFirmante')->middleware(['role:MANTENIMIENTO|SEGURIDAD|LOCATARIO|HESS']);
+    Route::get('/formato-pdf-analisis-riesgo/{permiso}', 'PermisoMantenimientoController@formatoPdfAnalisisRiesgo')->middleware(['role:MANTENIMIENTO|SEGURIDAD|LOCATARIO|HESS']);
+    Route::get('/formato-pdf-simple/{permiso}', 'PermisoMantenimientoController@formatoPdfSimple')->middleware(['role:LOCATARIO|HESS']);
 });
 
 
