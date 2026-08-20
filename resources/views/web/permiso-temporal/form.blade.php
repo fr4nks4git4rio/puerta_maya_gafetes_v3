@@ -24,7 +24,7 @@
             <div class="form-group row">
                 {!! Form::label('ptmp_nombre', 'Nombre *', ['class' => 'col-sm-4 control-label']) !!}
                 <div class="col-sm-8">
-                    {!! Form::text('ptmp_nombre', null, ['class' => 'form-control']) !!}
+                    {!! Form::text('ptmp_nombre', null, ['id' => 'ptmp_nombre', 'class' => 'form-control']) !!}
                 </div>
             </div>
 
@@ -249,6 +249,11 @@
                     autoclose: true,
                     format: 'yyyy-mm-dd',
                     language: '{{ App::getLocale() }}'
+                });
+
+                document.getElementById('ptmp_nombre').addEventListener('input', function() {
+                    // Reemplazar cualquier carácter que no sea letra o espacio
+                    this.value = this.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
                 });
 
                 $('#ptmp_vigencia_inicial').on('change', function() {
