@@ -797,10 +797,13 @@ class PermisoMantenimientoController extends Controller
                 // N o t i f i c a ci o n -------------------------------------------------------------
                 $locatarios = User::role('LOCATARIO')
                     ->whereUsrLcalId($permiso->pmtt_lcal_id)
-                    ->orWhereIn('email', ['jortiz2@carnival.com', 'rvizcaino@carnival.com', 'lvargas@carnival.com'])
                     ->get();
 
                 \Notification::send($locatarios, new PermisoMantenimientoRechazado($permiso, $this->data['pmtt_comentario_admon']));
+
+                $otros = User::whereIn('email', ['jortiz2@carnival.com', 'rvizcaino@carnival.com', 'lvargas@carnival.com'])->get();
+
+                \Notification::send($otros, new PermisoMantenimientoRechazado($permiso, $this->data['pmtt_comentario_admon']));
                 //-------------------------------------------------------------------------------------
 
             } catch (\Exception $e) {
@@ -854,10 +857,13 @@ class PermisoMantenimientoController extends Controller
                     // N o t i f i c a ci o n -------------------------------------------------------------
                     $locatarios = User::role('LOCATARIO')
                         ->whereUsrLcalId($permiso->pmtt_lcal_id)
-                        ->orWhereIn('email', ['jortiz2@carnival.com', 'rvizcaino@carnival.com', 'lvargas@carnival.com'])
                         ->get();
 
                     \Notification::send($locatarios, new PermisoMantenimientoAprobado($permiso));
+
+                    $otros = User::whereIn('email', ['jortiz2@carnival.com', 'rvizcaino@carnival.com', 'lvargas@carnival.com'])->get();
+
+                    \Notification::send($otros, new PermisoMantenimientoAprobado($permiso));
                     //-------------------------------------------------------------------------------------
 
                 } catch (\Exception $e) {
@@ -917,10 +923,14 @@ class PermisoMantenimientoController extends Controller
                 // N o t i f i c a ci o n -------------------------------------------------------------
                 $locatarios = User::role('LOCATARIO')
                     ->whereUsrLcalId($permiso->pmtt_lcal_id)
-                    ->orWhereIn('email', ['jortiz2@carnival.com', 'rvizcaino@carnival.com', 'lvargas@carnival.com'])
                     ->get();
 
                 \Notification::send($locatarios, new PermisoMantenimientoAprobado($permiso));
+
+                $otros = User::whereIn('email', ['jortiz2@carnival.com', 'rvizcaino@carnival.com', 'lvargas@carnival.com'])
+                    ->get();
+
+                \Notification::send($otros, new PermisoMantenimientoAprobado($permiso));
                 //-------------------------------------------------------------------------------------
 
             } catch (\Exception $e) {
@@ -1013,10 +1023,14 @@ class PermisoMantenimientoController extends Controller
                     try {
                         $locatarios = User::role('LOCATARIO')
                             ->whereUsrLcalId($permiso->pmtt_lcal_id)
-                            ->orWhereIn('email', ['jortiz2@carnival.com', 'rvizcaino@carnival.com', 'lvargas@carnival.com'])
                             ->get();
 
                         \Notification::send($locatarios, new PermisoMantenimientoRechazado($permiso));
+
+                        $otros = User::whereIn('email', ['jortiz2@carnival.com', 'rvizcaino@carnival.com', 'lvargas@carnival.com'])
+                            ->get();
+
+                        \Notification::send($otros, new PermisoMantenimientoRechazado($permiso));
                     } catch (\Exception $e) {
                         $response_message .= ' Error al notificar';
                         $response_data['notification_error'] = $e->getMessage();
