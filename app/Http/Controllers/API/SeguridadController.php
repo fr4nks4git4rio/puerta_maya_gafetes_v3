@@ -74,86 +74,89 @@ class SeguridadController extends Controller
             case 'GA':
                 if ($data['separador'] === '-') {
                     $empleado = Empleado::where('empl_id', $data['identificador'])->withTrashed()->get();
-                    if ($empleado->count() > 0 && $empleado->first()->GafeteAcceso()) {
-                        $empleado = $empleado->first();
-                        $data['info'] = [
-                            'nombre_empleado' => $empleado->empl_nombre,
-                            'estado' => $empleado->GafeteAcceso()->sgft_estado,
-                            'vacunado' => $empleado->empl_vacuna_validada == 1,
-                            'local' => $empleado->Local->lcal_nombre_comercial,
-                            'vigencia' => settings()->get('anio_impresion', today()->year),
-                            'comentarios' => $empleado->GafeteAcceso()->sgft_comentario_admin ? $empleado->GafeteAcceso()->sgft_comentario_admin : '',
-                            'activo' => $empleado->empl_deleted_at === null
-                        ];
-                    } else {
+                    if ($empleado->count() ==  0)
                         return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Empleado no encontrado!']], 200);
+
+                    if (!$empleado->first()->GafeteAcceso()) {
+                        return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Gafete de Acceso no encontrado!']], 200);
                     }
+                    $empleado = $empleado->first();
+                    $data['info'] = [
+                        'nombre_empleado' => $empleado->empl_nombre,
+                        'estado' => $empleado->GafeteAcceso()->sgft_estado,
+                        'vacunado' => $empleado->empl_vacuna_validada == 1,
+                        'local' => $empleado->Local->lcal_nombre_comercial,
+                        'vigencia' => settings()->get('anio_impresion', today()->year),
+                        'comentarios' => $empleado->GafeteAcceso()->sgft_comentario_admin ? $empleado->GafeteAcceso()->sgft_comentario_admin : '',
+                        'activo' => $empleado->empl_deleted_at === null
+                    ];
                 } elseif ($data['separador'] === '_') {
                     $solicitud = SolicitudGafete::where('sgft_id', $data['identificador'])->withTrashed()->get();
-                    if ($solicitud->count() > 0) {
-                        $solicitud = $solicitud->first();
-                        $data['info'] = [
-                            'nombre_empleado' => $solicitud->Empleado->empl_nombre,
-                            'estado' => $solicitud->sgft_estado,
-                            'vacunado' => $solicitud->Empleado->empl_vacuna_validada == 1,
-                            'local' => $solicitud->Empleado->Local->lcal_nombre_comercial,
-                            'vigencia' => settings()->get('anio_impresion', today()->year),
-                            'comentarios' => $solicitud->sgft_comentario_admin ? $solicitud->sgft_comentario_admin : '',
-                            'activo' => $solicitud->sgft_activated_at !== null && $solicitud->sgft_disabled_at === null && $solicitud->sgft_deleted_at === null
-                        ];
-                    } else {
+
+                    if ($solicitud->count() == 0)
                         return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Solicitud de Gafete no encontrada!']], 200);
-                    }
+
+                    $solicitud = $solicitud->first();
+                    $data['info'] = [
+                        'nombre_empleado' => $solicitud->Empleado->empl_nombre,
+                        'estado' => $solicitud->sgft_estado,
+                        'vacunado' => $solicitud->Empleado->empl_vacuna_validada == 1,
+                        'local' => $solicitud->Empleado->Local->lcal_nombre_comercial,
+                        'vigencia' => settings()->get('anio_impresion', today()->year),
+                        'comentarios' => $solicitud->sgft_comentario_admin ? $solicitud->sgft_comentario_admin : '',
+                        'activo' => $solicitud->sgft_activated_at !== null && $solicitud->sgft_disabled_at === null && $solicitud->sgft_deleted_at === null
+                    ];
                 }
                 break;
             case 'GE':
                 $gafete = GafeteEstacionamiento::where('gest_id', $data['identificador'])->withTrashed()->get();
-                if ($gafete->count() > 0) {
-                    $gafete = $gafete->first();
-                    $data['info'] = [
-                        'numero' => $gafete->gest_numero . ' de ' . (strtolower($gafete->gest_tipo) == 'auto' ? $gafete->Local->lcal_espacios_autos : $gafete->Local->lcal_espacios_motos),
-                        'tipo' => $gafete->gest_tipo,
-                        'local' => $gafete->Local->lcal_nombre_comercial,
-                        'comentarios' => $gafete->gest_comentario_admin ? $gafete->gest_comentario_admin : '',
-                        'estado' => $gafete->gest_estado,
-                        'activo' => $gafete->gest_disabled_at === null
-                    ];
-                } else {
+
+                if ($gafete->count() == 0)
                     return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Gafete no encontrado!']], 200);
-                }
+
+                $gafete = $gafete->first();
+                $data['info'] = [
+                    'numero' => $gafete->gest_numero . ' de ' . (strtolower($gafete->gest_tipo) == 'auto' ? $gafete->Local->lcal_espacios_autos : $gafete->Local->lcal_espacios_motos),
+                    'tipo' => $gafete->gest_tipo,
+                    'local' => $gafete->Local->lcal_nombre_comercial,
+                    'comentarios' => $gafete->gest_comentario_admin ? $gafete->gest_comentario_admin : '',
+                    'estado' => $gafete->gest_estado,
+                    'activo' => $gafete->gest_disabled_at === null
+                ];
+
                 break;
             case 'PT':
                 $permiso_temp = PermisoTemporal::where('ptmp_id', $data['identificador'])->withTrashed()->get();
-                if ($permiso_temp->count() > 0) {
-                    $permiso_temp = $permiso_temp->first();
-                    $data['info'] = [
-                        'nombre_persona' => $permiso_temp->ptmp_nombre,
-                        'estado' => $permiso_temp->ptmp_estado,
-                        'local' => $permiso_temp->Local->lcal_nombre_comercial,
-                        'vacunado' => $permiso_temp->ptmp_vacunado == 1,
-                        'fecha_inicio' => Carbon::createFromFormat('Y-m-d', $permiso_temp->ptmp_vigencia_inicial)->format('d/m/Y'),
-                        'fecha_fin' => Carbon::createFromFormat('Y-m-d', $permiso_temp->ptmp_vigencia_final)->format('d/m/Y'),
-                    ];
-                } else {
+
+                if ($permiso_temp->count() == 0)
                     return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Permiso Temporal no encontrado!']], 200);
-                }
+
+                $permiso_temp = $permiso_temp->first();
+                $data['info'] = [
+                    'nombre_persona' => $permiso_temp->ptmp_nombre,
+                    'estado' => $permiso_temp->ptmp_estado,
+                    'local' => $permiso_temp->Local->lcal_nombre_comercial,
+                    'vacunado' => $permiso_temp->ptmp_vacunado == 1,
+                    'fecha_inicio' => Carbon::createFromFormat('Y-m-d', $permiso_temp->ptmp_vigencia_inicial)->format('d/m/Y'),
+                    'fecha_fin' => Carbon::createFromFormat('Y-m-d', $permiso_temp->ptmp_vigencia_final)->format('d/m/Y'),
+                ];
                 break;
             case 'PM':
                 $permiso_mant = PermisoMantenimiento::where('pmtt_id', $data['identificador'])->withTrashed()->get();
-                if ($permiso_mant->count() > 0) {
-                    $permiso_mant = $permiso_mant->first();
-                    $data['info'] = [
-                        'nombre_empresa' => $permiso_mant->pmtt_empresa,
-                        'representante' => $permiso_mant->pmtt_representante,
-                        'estado' => $permiso_mant->pmtt_estado,
-                        'listado_personas' => $permiso_mant->pmtt_listado_trabajadores,
-                        'fecha_inicio' => Carbon::createFromFormat('Y-m-d', $permiso_mant->pmtt_vigencia_inicial)->format('d/m/Y'),
-                        'fecha_fin' => Carbon::createFromFormat('Y-m-d', $permiso_mant->pmtt_vigencia_final)->format('d/m/Y'),
-                        'trabajo_realizar' => $permiso_mant->pmtt_trabajo
-                    ];
-                } else {
+
+                if ($permiso_mant->count() == 0)
                     return response()->json(['data' => ['tipo' => '', 'acceso' => false, 'msg' => 'Permiso de Mantenimiento no encontrado!'], 'error' => '!'], 200);
-                }
+
+                $permiso_mant = $permiso_mant->first();
+                $data['info'] = [
+                    'nombre_empresa' => $permiso_mant->pmtt_empresa,
+                    'representante' => $permiso_mant->pmtt_representante,
+                    'estado' => $permiso_mant->pmtt_estado,
+                    'listado_personas' => $permiso_mant->pmtt_listado_trabajadores,
+                    'fecha_inicio' => Carbon::createFromFormat('Y-m-d', $permiso_mant->pmtt_vigencia_inicial)->format('d/m/Y'),
+                    'fecha_fin' => Carbon::createFromFormat('Y-m-d', $permiso_mant->pmtt_vigencia_final)->format('d/m/Y'),
+                    'trabajo_realizar' => $permiso_mant->pmtt_trabajo
+                ];
                 break;
         }
 
